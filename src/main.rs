@@ -1,30 +1,36 @@
-use std::io::{self, Write};
-
 use crate::{parser::parse, tokenizer::tokenize};
-
-mod tokenizer;
+use rustyline::error::ReadlineError;
+use rustyline::{Editor, Result};
 
 mod parser;
+mod tokenizer;
 
-fn main() {
+fn main() -> Result<()> {
+    let mut rl = Editor::<()>::new()?;
+
     loop {
-        print!("> ");
-        io::stdout().flush();
-
-        let mut input = String::new();
-
-        io::stdin().read_line(&mut input);
-
-        match input.as_str() {
-            "" => break,
-            "\n" => continue,
-            _ => match tokenize(&input) {
-                Ok(mut tokens) => match parse(&mut tokens) {
-                    Ok(output) => println!("{:?}", output),
-                    Err(e) => println!("Parse Error: {}", e),
-                },
-                Err(e) => println!("Syntax Error: {}", e),
-            },
+        let readline = rl.readline("> ");
+        match readline {
+            Ok(line) => {
+                if line == "" {
+                    continue;
+                }
+                rl.add_history_entry(line.as_str());
+                match tokenize(&line) {
+                    Ok(mut tokens) => match parse(&mut tokens) {
+                        Ok(output) => println!("{:?}", output),
+                        Err(e) => println!("Parse Error: {}", e),
+                    },
+                    Err(e) => println!("Syntax Error: {}", e),
+                }
+            }
+            Err(ReadlineError::Interrupted) => continue,
+            Err(ReadlineError::Eof) => break,
+            Err(err) => {
+                println!("Error: {:?}", err);
+                break;
+            }
         }
     }
+    rl.save_history("history.txt")
 }
