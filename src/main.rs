@@ -1,28 +1,9 @@
-use std::{
-    collections::VecDeque,
-    io::{self, Write},
-};
+use std::io::{self, Write};
 
-fn tokenize(input: &str) -> VecDeque<String> {
-    input
-        .replace("(", " ( ")
-        .replace(")", " ) ")
-        .split_ascii_whitespace()
-        .map(|token| token.to_string())
-        .collect()
-}
+use crate::{parser::parse, tokenizer::tokenize};
 
-mod parser {
-    use std::{collections::VecDeque, fmt};
-
-    #[derive(Debug)]
-    pub(crate) struct ParseError(String);
-
-    impl fmt::Display for ParseError {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            write!(f, "{}", self.0)
-        }
-    }
+mod tokenizer {
+    use std::collections::VecDeque;
 
     #[derive(Debug, PartialEq)]
     pub(crate) enum Token {
@@ -31,6 +12,30 @@ mod parser {
         Int(i32),
         Float(f32),
         Symbol(String),
+    }
+
+    pub(crate) fn tokenize(input: &str) -> VecDeque<String> {
+        input
+            .replace("(", " ( ")
+            .replace(")", " ) ")
+            .split_ascii_whitespace()
+            .map(|token| token.to_string())
+            .collect()
+    }
+}
+
+mod parser {
+    use std::{collections::VecDeque, fmt};
+
+    use crate::tokenizer::Token;
+
+    #[derive(Debug)]
+    pub(crate) struct ParseError(String);
+
+    impl fmt::Display for ParseError {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "{}", self.0)
+        }
     }
 
     #[derive(Debug)]
@@ -105,7 +110,7 @@ fn main() {
             "" => break,
             "\n" => continue,
             _ => {
-                match parser::parse(&mut tokenize(&input)) {
+                match parse(&mut tokenize(&input)) {
                     Ok(ast) => print!("{:?}\n", ast),
                     Err(e) => print!("{:?}\n", e),
                 };
