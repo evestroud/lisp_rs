@@ -101,6 +101,15 @@ fn main() {
 
         io::stdin().read_line(&mut input);
 
-        print!("{:?}\n", parser::parse(&mut tokenize(&input)));
+        match input.as_str() {
+            "" => break,
+            "\n" => continue,
+            _ => {
+                match parser::parse(&mut tokenize(&input)) {
+                    Ok(ast) => print!("{:?}\n", ast),
+                    Err(e) => print!("{:?}\n", e),
+                };
+            }
+        }
     }
 }
