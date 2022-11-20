@@ -24,29 +24,45 @@ mod parser {
         }
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, PartialEq)]
     pub(crate) enum Token {
         Start,
         End,
-        Num(i32),
+        Int(i32),
+        Float(f32),
         Symbol(String),
     }
 
-    pub(crate) fn parse(mut tokens: VecDeque<String>) -> Result<Vec<Token>, ParseError> {
+    #[derive(Debug)]
+    pub(crate) enum Exp {
+        SubExp(Vec<Exp>),
+        Literal(Token),
+    }
+
+    pub(crate) fn parse(tokens: &mut VecDeque<String>) -> Result<Exp, ParseError> {
         if tokens.len() == 0 {
             return Err(ParseError("Unexpected EOF while parsing".to_string()));
         }
-        let exp = Vec::new();
         let t = parse_token(&tokens.pop_front().unwrap())?;
         match t {
-            // need to define a recursive data structure for Vec<Vec?...<Token>>
-            // can enums be recursive ??????? lol
-            Token::Start => todo!(),
-            Token::End => todo!(),
-            Token::Num(_) => todo!(),
-            Token::Symbol(_) => todo!(),
+            Token::Start => {
+                let mut exp = Vec::new();
+                while parse_token(
+                    tokens
+                        .front()
+                        .ok_or(ParseError("Unexpected EOF while parsing".to_string()))?,
+                )? != Token::End
+                {
+                    exp.push(parse(tokens)?);
+                }
+                tokens.pop_front();
+                return Ok(Exp::SubExp(exp));
+            }
+            Token::End => Err(ParseError("Unmatched ')'".to_string())),
+            Token::Int(num) => Ok(Exp::Literal(Token::Int(num))),
+            Token::Float(num) => Ok(Exp::Literal(Token::Float(num))),
+            Token::Symbol(symbol) => Ok(Exp::Literal(Token::Symbol(symbol))),
         }
-        Ok(exp)
     }
 
     pub(crate) fn parse_token(token: &str) -> Result<Token, ParseError> {
@@ -56,9 +72,15 @@ mod parser {
             _ => {
                 if let Some(c) = token.chars().next() {
                     if c.is_ascii_digit() || ['.', '-'].contains(&c) {
-                        Ok(Token::Num(token.parse().map_err(|_| {
-                            ParseError("Invalid number literal".to_string())
-                        })?))
+                        if token.contains('.') {
+                            Ok(Token::Float(token.parse().map_err(|_| {
+                                ParseError("Invalid number literal".to_string())
+                            })?))
+                        } else {
+                            Ok(Token::Int(token.parse().map_err(|_| {
+                                ParseError("Invalid number literal".to_string())
+                            })?))
+                        }
                     } else {
                         Ok(Token::Symbol(token.to_string()))
                     }
@@ -79,6 +101,6 @@ fn main() {
 
         io::stdin().read_line(&mut input);
 
-        print!("{:?}\n", tokenize(&input));
+        print!("{:?}\n", parser::parse(&mut tokenize(&input)));
     }
 }
