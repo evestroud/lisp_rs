@@ -1,8 +1,10 @@
-use crate::{parser::parse, tokenizer::tokenize};
+use crate::{evaluator::evaluate, parser::parse, tokenizer::tokenize};
 use rustyline::error::ReadlineError;
 use rustyline::{Editor, Result};
 
 mod atom;
+mod environment;
+mod evaluator;
 mod parser;
 mod tokenizer;
 
@@ -19,7 +21,10 @@ fn main() -> Result<()> {
                 rl.add_history_entry(line.as_str());
                 match tokenize(&line) {
                     Ok(mut tokens) => match parse(&mut tokens) {
-                        Ok(output) => println!("{:?}", output),
+                        Ok(expression) => match evaluate(&expression) {
+                            Ok(output) => println!("{:?}\n{:?}", expression, output),
+                            Err(e) => println!("Evaluation Error: {}", e),
+                        },
                         Err(e) => println!("Parse Error: {}", e),
                     },
                     Err(e) => println!("Syntax Error: {}", e),
