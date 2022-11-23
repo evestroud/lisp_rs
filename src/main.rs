@@ -2,6 +2,7 @@ use crate::{parser::parse, tokenizer::tokenize};
 use rustyline::error::ReadlineError;
 use rustyline::{Editor, Result};
 
+mod atom;
 mod parser;
 mod tokenizer;
 

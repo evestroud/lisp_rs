@@ -1,5 +1,7 @@
 use std::{collections::VecDeque, fmt};
 
+use crate::atom::Atom;
+
 #[derive(Debug)]
 pub(crate) struct SyntaxError(String);
 
@@ -10,17 +12,10 @@ impl fmt::Display for SyntaxError {
 }
 
 #[derive(Debug, PartialEq)]
-pub(crate) enum Literal {
-    Int(i32),
-    Float(f32),
-    Symbol(String),
-}
-
-#[derive(Debug, PartialEq)]
 pub(crate) enum Token {
     StartExp,
     EndExp,
-    Atom(Literal),
+    Literal(Atom),
 }
 
 pub(crate) fn tokenize(input: &str) -> Result<VecDeque<Token>, SyntaxError> {
@@ -35,16 +30,16 @@ pub(crate) fn tokenize(input: &str) -> Result<VecDeque<Token>, SyntaxError> {
                 if let Some(c) = token.chars().next() {
                     if c.is_ascii_digit() || ['.', '-'].contains(&c) {
                         if token.contains('.') {
-                            Ok(Token::Atom(Literal::Float(token.parse().map_err(
+                            Ok(Token::Literal(Atom::Float(token.parse().map_err(
                                 |_| SyntaxError("Invalid number literal".to_string()),
                             )?)))
                         } else {
-                            Ok(Token::Atom(Literal::Int(token.parse().map_err(|_| {
+                            Ok(Token::Literal(Atom::Int(token.parse().map_err(|_| {
                                 SyntaxError("Invalid number literal".to_string())
                             })?)))
                         }
                     } else {
-                        Ok(Token::Atom(Literal::Symbol(token.to_string())))
+                        Ok(Token::Literal(Atom::Symbol(token.to_string())))
                     }
                 } else {
                     Err(SyntaxError("Tried to parse empty token".to_string()))
