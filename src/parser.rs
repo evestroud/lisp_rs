@@ -1,6 +1,6 @@
 use std::{collections::VecDeque, fmt};
 
-use crate::tokenizer::Token;
+use crate::tokenizer::{Literal, Token};
 
 #[derive(Debug)]
 pub(crate) struct ParseError(String);
@@ -14,7 +14,7 @@ impl fmt::Display for ParseError {
 #[derive(Debug)]
 pub(crate) enum Exp {
     SubExp(Vec<Exp>),
-    Literal(Token),
+    Atom(Literal),
 }
 
 pub(crate) fn parse(tokens: &mut VecDeque<Token>) -> Result<Exp, ParseError> {
@@ -36,8 +36,10 @@ pub(crate) fn parse(tokens: &mut VecDeque<Token>) -> Result<Exp, ParseError> {
             return Ok(Exp::SubExp(exp));
         }
         Token::EndExp => Err(ParseError("Unmatched ')'".to_string())),
-        Token::Int(num) => Ok(Exp::Literal(Token::Int(*num))),
-        Token::Float(num) => Ok(Exp::Literal(Token::Float(*num))),
-        Token::Symbol(symbol) => Ok(Exp::Literal(Token::Symbol(symbol.to_string()))),
+        Token::Atom(atom) => match atom {
+            Literal::Int(num) => Ok(Exp::Atom(Literal::Int(*num))),
+            Literal::Float(num) => Ok(Exp::Atom(Literal::Float(*num))),
+            Literal::Symbol(symbol) => Ok(Exp::Atom(Literal::Symbol(symbol.to_string()))),
+        },
     }
 }
