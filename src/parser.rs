@@ -42,6 +42,7 @@ pub(crate) fn parse(tokens: &mut VecDeque<Token>) -> Result<Exp, ParseError> {
             Atom::Float(num) => Ok(Exp::Literal(Atom::Float(*num))),
             Atom::Symbol(symbol) => Ok(Exp::Literal(Atom::Symbol(symbol.to_string()))),
             Atom::Nil => Ok(Exp::Literal(Atom::Nil)),
+            Atom::Builtin(_) => todo!(),
         },
     }
 }
