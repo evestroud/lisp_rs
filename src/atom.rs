@@ -1,5 +1,7 @@
 use std::{fmt::Debug, rc::Rc};
 
+use crate::evaluator::EvalError;
+
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum Atom {
     Int(i32),
@@ -9,7 +11,7 @@ pub(crate) enum Atom {
     Builtin(Rc<Builtin>),
 }
 
-pub(crate) struct Builtin(pub(crate) &'static dyn Fn(Vec<Atom>) -> Atom);
+pub(crate) struct Builtin(pub(crate) &'static dyn Fn(Vec<Atom>) -> Result<Atom, EvalError>);
 
 impl Debug for Builtin {
     // https://stackoverflow.com/questions/38088067/equivalent-of-func-or-function-in-rust

@@ -43,5 +43,5 @@ fn apply(list: &Vec<Exp>, env: &mut Env) -> Result<Atom, EvalError> {
     for res in rest_results {
         rest.push(res?);
     }
-    Ok(operation.0(rest))
+    operation.0(rest)
 }

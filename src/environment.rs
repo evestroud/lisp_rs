@@ -1,6 +1,9 @@
 use std::{collections::HashMap, rc::Rc};
 
-use crate::atom::{Atom, Builtin};
+use crate::{
+    atom::{Atom, Builtin},
+    evaluator::EvalError,
+};
 
 pub(crate) struct Env {
     pub(crate) table: HashMap<String, Atom>,
@@ -20,7 +23,7 @@ impl Env {
     }
 }
 
-fn add(args: Vec<Atom>) -> Atom {
+fn add(args: Vec<Atom>) -> Result<Atom, EvalError> {
     let mut result = 0;
     for item in args {
         match item {
