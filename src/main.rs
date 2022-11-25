@@ -11,6 +11,8 @@ mod tokenizer;
 fn main() -> Result<()> {
     let mut rl = Editor::<()>::new()?;
 
+    let mut env = environment::Env::new();
+
     loop {
         let readline = rl.readline("> ");
         match readline {
@@ -21,7 +23,7 @@ fn main() -> Result<()> {
                 rl.add_history_entry(line.as_str());
                 match tokenize(&line) {
                     Ok(mut tokens) => match parse(&mut tokens) {
-                        Ok(expression) => match evaluate(&expression) {
+                        Ok(expression) => match evaluate(&expression, &mut env) {
                             Ok(output) => println!("{:?}\n{:?}", expression, output),
                             Err(e) => println!("Evaluation Error: {}", e),
                         },
