@@ -28,7 +28,9 @@ pub(crate) fn tokenize(input: &str) -> Result<VecDeque<Token>, SyntaxError> {
             ")" => Ok(Token::EndExp),
             _ => {
                 if let Some(c) = token.chars().next() {
-                    if c.is_ascii_digit() || ['.', '-'].contains(&c) {
+                    if c.is_ascii_digit()
+                        || (['.', '-'].contains(&c) && ![".", "-"].contains(&token))
+                    {
                         if token.contains('.') {
                             Ok(Token::Literal(Atom::Float(token.parse().map_err(
                                 |_| SyntaxError("Invalid number literal".to_string()),
