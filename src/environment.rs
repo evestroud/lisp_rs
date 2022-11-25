@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, rc::Rc};
 
 use crate::atom::{Atom, Builtin};
 
@@ -10,7 +10,7 @@ pub(crate) struct Env {
 impl Env {
     pub(crate) fn new() -> Self {
         Self {
-            table: HashMap::from([("+".to_string(), Atom::Builtin(Builtin(&add)))]),
+            table: HashMap::from([("+".to_string(), Atom::Builtin(Rc::from(Builtin(&add))))]),
             parent: None,
         }
     }
