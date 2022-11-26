@@ -3,7 +3,7 @@ use std::{
     rc::Rc,
 };
 
-use crate::evaluator::EvalError;
+use crate::{environment::Env, evaluator::EvalError};
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum Atom {
@@ -97,7 +97,9 @@ impl Display for Rational {
     }
 }
 
-pub(crate) struct Builtin(pub(crate) &'static dyn Fn(Vec<Atom>) -> Result<Atom, EvalError>);
+pub(crate) struct Builtin(
+    pub(crate) &'static dyn Fn(Vec<Atom>, &mut Env) -> Result<Atom, EvalError>,
+);
 
 impl Debug for Builtin {
     // https://stackoverflow.com/questions/38088067/equivalent-of-func-or-function-in-rust

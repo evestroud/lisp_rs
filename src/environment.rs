@@ -26,9 +26,13 @@ impl Env {
     pub(crate) fn get(&self, name: &str) -> Option<&Atom> {
         self.table.get(name)
     }
+
+    pub(crate) fn set(&mut self, name: &str, val: &Atom) {
+        self.table.insert(name.to_string(), val.clone());
+    }
 }
 
-fn add(args: Vec<Atom>) -> Result<Atom, EvalError> {
+fn add(args: Vec<Atom>, env: &mut Env) -> Result<Atom, EvalError> {
     let mut result = Rational::from(0.0);
     for item in args {
         match item {
@@ -39,7 +43,7 @@ fn add(args: Vec<Atom>) -> Result<Atom, EvalError> {
     Ok(Atom::Number(result))
 }
 
-fn sub(args: Vec<Atom>) -> Result<Atom, EvalError> {
+fn sub(args: Vec<Atom>, env: &mut Env) -> Result<Atom, EvalError> {
     let mut result;
     if let Some(val) = args.get(0) {
         result = match val {
@@ -65,7 +69,7 @@ fn sub(args: Vec<Atom>) -> Result<Atom, EvalError> {
     Ok(Atom::Number(result))
 }
 
-fn mul(args: Vec<Atom>) -> Result<Atom, EvalError> {
+fn mul(args: Vec<Atom>, env: &mut Env) -> Result<Atom, EvalError> {
     let mut result = Rational::from(1.0);
     for item in args {
         match item {
@@ -76,7 +80,7 @@ fn mul(args: Vec<Atom>) -> Result<Atom, EvalError> {
     Ok(Atom::Number(result))
 }
 
-fn div(args: Vec<Atom>) -> Result<Atom, EvalError> {
+fn div(args: Vec<Atom>, env: &mut Env) -> Result<Atom, EvalError> {
     if args.len() != 2 {
         return Err(EvalError(format!(
             "/ takes 2 arguments, found {}",
