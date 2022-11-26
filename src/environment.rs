@@ -29,54 +29,51 @@ impl Env {
 }
 
 fn add(args: Vec<Atom>) -> Result<Atom, EvalError> {
-    let mut result = 0.0;
+    let mut result = Rational::from(0.0);
     for item in args {
         match item {
-            Atom::Number(val) => result += val.eval(),
+            Atom::Number(val) => result = result.add(&val),
             _ => return Err(EvalError(format!("Expected a number, found {:?}", item))),
-        }
+        };
     }
-    Ok(Atom::Number(Rational::from(result)))
+    Ok(Atom::Number(result))
 }
 
 fn sub(args: Vec<Atom>) -> Result<Atom, EvalError> {
     let mut result;
-    match args.get(0) {
-        Some(val) => {
-            result = match val {
-                Atom::Number(num) => num.eval(),
-                _ => return Err(EvalError(format!("Expected a number, found {:?}", val))),
-            }
+    if let Some(val) = args.get(0) {
+        result = match val {
+            Atom::Number(num) => num.clone(),
+            _ => return Err(EvalError(format!("Expected a number, found {:?}", val))),
         }
-        None => {
-            return Err(EvalError(
-                "- expects at least one argument, found none".to_string(),
-            ))
-        }
+    } else {
+        return Err(EvalError(
+            "- expects at least one argument, found none".to_string(),
+        ));
     }
 
     if args.len() == 1 {
-        return Ok(Atom::Number(Rational::from(-result)));
+        return Ok(Atom::Number(result.mul(&Rational::from(-1.0))));
     }
 
     for item in args[1..].iter() {
         match item {
-            Atom::Number(val) => result -= val.eval(),
+            Atom::Number(val) => result = result.sub(&val),
             _ => return Err(EvalError(format!("Expected a number, found {:?}", item))),
-        }
+        };
     }
-    Ok(Atom::Number(Rational::from(result)))
+    Ok(Atom::Number(result))
 }
 
 fn mul(args: Vec<Atom>) -> Result<Atom, EvalError> {
-    let mut result = 1.0;
+    let mut result = Rational::from(1.0);
     for item in args {
         match item {
-            Atom::Number(val) => result *= val.eval(),
+            Atom::Number(val) => result = result.mul(&val),
             _ => return Err(EvalError(format!("Expected a number, found {:?}", item))),
         }
     }
-    Ok(Atom::Number(Rational::from(result)))
+    Ok(Atom::Number(result))
 }
 
 fn div(args: Vec<Atom>) -> Result<Atom, EvalError> {
@@ -87,13 +84,13 @@ fn div(args: Vec<Atom>) -> Result<Atom, EvalError> {
         )));
     }
     let mut args = args.iter();
-    let num = match args.next().unwrap() {
-        Atom::Number(val) => val.eval() as f32,
-        _ => todo!(),
-    };
-    let den = match args.next().unwrap() {
-        Atom::Number(val) => val.eval() as f32,
-        _ => todo!(),
-    };
-    Ok(Atom::Number(Rational::from(num / den)))
+    let num = args.next().unwrap();
+    let den = args.next().unwrap();
+    match (num, den) {
+        (Atom::Number(n), Atom::Number(d)) => Ok(Atom::Number(n.div(&d))),
+        _ => Err(EvalError(format!(
+            "Expected two numbers, found {} and {}",
+            num, den
+        ))),
+    }
 }
