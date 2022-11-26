@@ -35,6 +35,51 @@ impl Rational {
     pub(crate) fn unwrap(&self) -> f32 {
         self.numerator / self.denominator
     }
+
+    fn new(n: f32, d: f32) -> Self {
+        let factor = Self::gcd(n, d);
+        Self {
+            numerator: n / factor,
+            denominator: d / factor,
+        }
+    }
+
+    fn gcd(a: f32, b: f32) -> f32 {
+        if a == 0.0 {
+            return b;
+        }
+        Self::gcd(b % a, a)
+    }
+
+    pub(crate) fn add(&self, other: &Self) -> Self {
+        let (mut n1, d1) = (self.numerator, self.denominator);
+        let (mut n2, d2) = (other.numerator, other.denominator);
+        let cd = d1 * d2;
+        n1 = n1 * d2;
+        n2 = n2 * d1;
+        Self::new(n1 + n2, cd)
+    }
+
+    pub(crate) fn sub(&self, other: &Self) -> Self {
+        let (mut n1, d1) = (self.numerator, self.denominator);
+        let (mut n2, d2) = (other.numerator, other.denominator);
+        let cd = d1 * d2;
+        n1 = n1 * d2;
+        n2 = n2 * d1;
+        Self::new(n1 - n2, cd)
+    }
+
+    pub(crate) fn mul(&self, other: &Self) -> Self {
+        let (n1, d1) = (self.numerator, self.denominator);
+        let (n2, d2) = (other.numerator, other.denominator);
+        Self::new(n1 * n2, d1 * d2)
+    }
+
+    pub(crate) fn div(&self, other: &Self) -> Self {
+        let (n1, d1) = (self.numerator, self.denominator);
+        let (n2, d2) = (other.numerator, other.denominator);
+        Self::new(n1 * d2, n2 * d1)
+    }
 }
 
 impl From<f32> for Rational {
