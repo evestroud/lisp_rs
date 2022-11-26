@@ -16,7 +16,7 @@ pub(crate) fn evaluate(input: &Exp, env: &mut Env) -> Result<Atom, EvalError> {
         Exp::SubExp(list) => apply(list, env),
         Exp::Literal(atom) => match atom {
             Atom::Symbol(symbol) => {
-                if let Some(val) = env.lookup(&symbol) {
+                if let Some(val) = env.get(&symbol) {
                     Ok(val.clone())
                 } else {
                     Err(EvalError(format!("Symbol {} not found", symbol)))

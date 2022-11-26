@@ -23,7 +23,7 @@ impl Env {
         }
     }
 
-    pub(crate) fn lookup(&self, name: &str) -> Option<&Atom> {
+    pub(crate) fn get(&self, name: &str) -> Option<&Atom> {
         self.table.get(name)
     }
 }
