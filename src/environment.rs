@@ -24,12 +24,27 @@ impl Env {
 }
 
 fn add(args: Vec<Atom>) -> Result<Atom, EvalError> {
-    let mut result = 0;
-    for item in args {
+    let mut result;
+    match args.get(0) {
+        Some(val) => {
+            result = match val {
+                Atom::Int(num) => *num,
+                Atom::Float(_) => todo!(),
+                _ => return Err(EvalError(format!("Expected a number, found {:?}", val))),
+            }
+        }
+        None => {
+            return Err(EvalError(
+                "+ expects at least one argument, found none".to_string(),
+            ))
+        }
+    }
+
+    for item in args[1..].iter() {
         match item {
             Atom::Int(val) => result += val,
             _ => todo!(),
         }
     }
-    Atom::Int(result)
+    Ok(Atom::Int(result))
 }

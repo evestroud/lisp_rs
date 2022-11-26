@@ -3,7 +3,7 @@ use core::fmt;
 use crate::{atom::Atom, environment::Env, parser::Exp};
 
 #[derive(Debug, Clone)]
-pub(crate) struct EvalError(String);
+pub(crate) struct EvalError(pub(crate) String);
 
 impl fmt::Display for EvalError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
