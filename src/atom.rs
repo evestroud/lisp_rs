@@ -32,7 +32,7 @@ pub(crate) struct Rational {
 }
 
 impl Rational {
-    pub(crate) fn unwrap(&self) -> f32 {
+    pub(crate) fn eval(&self) -> f32 {
         self.numerator / self.denominator
     }
 
@@ -93,7 +93,7 @@ impl From<f32> for Rational {
 
 impl Display for Rational {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.numerator / self.denominator)
+        write!(f, "{}", self.eval())
     }
 }
 
