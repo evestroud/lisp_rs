@@ -1,6 +1,6 @@
 use std::{collections::VecDeque, fmt};
 
-use crate::atom::Atom;
+use crate::atom::{Atom, Rational};
 
 #[derive(Debug)]
 pub(crate) struct SyntaxError(String);
@@ -31,15 +31,11 @@ pub(crate) fn tokenize(input: &str) -> Result<VecDeque<Token>, SyntaxError> {
                     if c.is_ascii_digit()
                         || (['.', '-'].contains(&c) && ![".", "-"].contains(&token))
                     {
-                        if token.contains('.') {
-                            Ok(Token::Literal(Atom::Float(token.parse().map_err(
-                                |_| SyntaxError("Invalid number literal".to_string()),
-                            )?)))
-                        } else {
-                            Ok(Token::Literal(Atom::Int(token.parse().map_err(|_| {
-                                SyntaxError("Invalid number literal".to_string())
-                            })?)))
-                        }
+                        Ok(Token::Literal(Atom::Number(Rational::from(
+                            token
+                                .parse::<f32>()
+                                .map_err(|_| SyntaxError("Invalid number literal".to_string()))?,
+                        ))))
                     } else {
                         Ok(Token::Literal(Atom::Symbol(token.to_string())))
                     }

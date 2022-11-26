@@ -24,7 +24,7 @@ fn main() -> Result<()> {
                 match tokenize(&line) {
                     Ok(mut tokens) => match parse(&mut tokens) {
                         Ok(expression) => match evaluate(&expression, &mut env) {
-                            Ok(output) => println!("{:?}\n{:?}", expression, output),
+                            Ok(output) => println!("{:?}\n{}", expression, output),
                             Err(e) => println!("Evaluation Error: {}", e),
                         },
                         Err(e) => println!("Parse Error: {}", e),

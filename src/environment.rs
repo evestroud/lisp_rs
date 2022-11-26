@@ -1,7 +1,7 @@
 use std::{collections::HashMap, rc::Rc};
 
 use crate::{
-    atom::{Atom, Builtin},
+    atom::{Atom, Builtin, Rational},
     evaluator::EvalError,
 };
 
@@ -29,15 +29,14 @@ impl Env {
 }
 
 fn add(args: Vec<Atom>) -> Result<Atom, EvalError> {
-    let mut result = 0;
+    let mut result = 0.0;
     for item in args {
         match item {
-            Atom::Int(val) => result += val,
-            Atom::Float(_) => todo!(),
+            Atom::Number(val) => result += val.unwrap(),
             _ => return Err(EvalError(format!("Expected a number, found {:?}", item))),
         }
     }
-    Ok(Atom::Int(result))
+    Ok(Atom::Number(Rational::from(result)))
 }
 
 fn sub(args: Vec<Atom>) -> Result<Atom, EvalError> {
@@ -45,8 +44,7 @@ fn sub(args: Vec<Atom>) -> Result<Atom, EvalError> {
     match args.get(0) {
         Some(val) => {
             result = match val {
-                Atom::Int(num) => *num,
-                Atom::Float(_) => todo!(),
+                Atom::Number(num) => num.unwrap(),
                 _ => return Err(EvalError(format!("Expected a number, found {:?}", val))),
             }
         }
@@ -58,28 +56,27 @@ fn sub(args: Vec<Atom>) -> Result<Atom, EvalError> {
     }
 
     if args.len() == 1 {
-        return Ok(Atom::Int(-result));
+        return Ok(Atom::Number(Rational::from(-result)));
     }
 
     for item in args[1..].iter() {
         match item {
-            Atom::Int(val) => result -= val,
+            Atom::Number(val) => result -= val.unwrap(),
             _ => return Err(EvalError(format!("Expected a number, found {:?}", item))),
         }
     }
-    Ok(Atom::Int(result))
+    Ok(Atom::Number(Rational::from(result)))
 }
 
 fn mul(args: Vec<Atom>) -> Result<Atom, EvalError> {
-    let mut result = 1;
+    let mut result = 1.0;
     for item in args {
         match item {
-            Atom::Int(val) => result *= val,
-            Atom::Float(_) => todo!(),
+            Atom::Number(val) => result *= val.unwrap(),
             _ => return Err(EvalError(format!("Expected a number, found {:?}", item))),
         }
     }
-    Ok(Atom::Int(result))
+    Ok(Atom::Number(Rational::from(result)))
 }
 
 fn div(args: Vec<Atom>) -> Result<Atom, EvalError> {
@@ -91,12 +88,12 @@ fn div(args: Vec<Atom>) -> Result<Atom, EvalError> {
     }
     let mut args = args.iter();
     let num = match args.next().unwrap() {
-        Atom::Int(val) => *val as f32,
+        Atom::Number(val) => val.unwrap() as f32,
         _ => todo!(),
     };
     let den = match args.next().unwrap() {
-        Atom::Int(val) => *val as f32,
+        Atom::Number(val) => val.unwrap() as f32,
         _ => todo!(),
     };
-    Ok(Atom::Float(num / den))
+    Ok(Atom::Number(Rational::from(num / den)))
 }
