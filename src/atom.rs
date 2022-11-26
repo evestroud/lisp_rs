@@ -3,7 +3,7 @@ use std::{
     rc::Rc,
 };
 
-use crate::{environment::Env, evaluator::EvalError};
+use crate::builtin::Builtin;
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum Atom {
@@ -94,26 +94,5 @@ impl From<f32> for Rational {
 impl Display for Rational {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.eval())
-    }
-}
-
-pub(crate) struct Builtin(
-    pub(crate) &'static dyn Fn(Vec<Atom>, &mut Env) -> Result<Atom, EvalError>,
-);
-
-impl Debug for Builtin {
-    // https://stackoverflow.com/questions/38088067/equivalent-of-func-or-function-in-rust
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Builtin function")
-    }
-}
-
-impl PartialEq for Builtin {
-    fn ne(&self, other: &Self) -> bool {
-        !self.eq(other)
-    }
-
-    fn eq(&self, other: &Self) -> bool {
-        todo!()
     }
 }

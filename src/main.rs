@@ -3,6 +3,7 @@ use rustyline::error::ReadlineError;
 use rustyline::{Editor, Result};
 
 mod atom;
+mod builtin;
 mod environment;
 mod evaluator;
 mod parser;
