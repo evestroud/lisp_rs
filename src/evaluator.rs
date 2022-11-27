@@ -42,6 +42,9 @@ fn apply(list: &Vec<Exp>, env: &mut Env) -> Result<Atom, EvalError> {
             }
             f.0(rest, env)
         }
+        Atom::SpecialForm(form) => match form.as_str() {
+            _ => Err(EvalError(format!("Invalid special form {}", form))),
+        },
         Atom::Nil => return Ok(Atom::Nil),
         _ => Err(EvalError(format!("Expected a symbol, found {:?}", first))),
     }

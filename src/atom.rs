@@ -11,6 +11,7 @@ pub(crate) enum Atom {
     Symbol(String),
     Nil,
     Builtin(Rc<Builtin>),
+    SpecialForm(String),
 }
 
 impl Display for Atom {
@@ -19,7 +20,8 @@ impl Display for Atom {
             Atom::Number(n) => n.to_string(),
             Atom::Symbol(s) => s.to_string(),
             Atom::Nil => todo!(),
-            Atom::Builtin(_) => "Builtin".to_string(),
+            Atom::Builtin(_) => "Builtin".to_string(), // TODO
+            Atom::SpecialForm(f) => f.to_string(),
         };
         write!(f, "{}", val)
     }
