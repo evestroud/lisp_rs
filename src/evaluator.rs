@@ -28,20 +28,21 @@ pub(crate) fn evaluate(input: &Exp, env: &mut Env) -> Result<Atom, EvalError> {
 }
 
 fn apply(list: &Vec<Exp>, env: &mut Env) -> Result<Atom, EvalError> {
+    let mut list_iter = list.iter();
     let first = evaluate(
-        list.first().unwrap_or_else(|| &Exp::Literal(Atom::Nil)),
+        list_iter.next().unwrap_or_else(|| &Exp::Literal(Atom::Nil)),
         env,
     )?;
-    let operation;
     match first {
-        Atom::Builtin(f) => operation = f,
+        Atom::Builtin(f) => {
+            let rest_results = list_iter.map(|exp| evaluate(exp, env));
+            let mut rest = Vec::<Atom>::new();
+            for res in rest_results {
+                rest.push(res?);
+            }
+            f.0(rest, env)
+        }
         Atom::Nil => return Ok(Atom::Nil),
-        _ => return Err(EvalError(format!("Expected a symbol, found {:?}", first))),
-    };
-    let rest_results = list[1..].iter().map(|exp| evaluate(exp, env));
-    let mut rest = Vec::<Atom>::new();
-    for res in rest_results {
-        rest.push(res?);
+        _ => Err(EvalError(format!("Expected a symbol, found {:?}", first))),
     }
-    operation.0(rest, env)
 }
