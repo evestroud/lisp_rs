@@ -1,6 +1,6 @@
 use std::{collections::HashMap, rc::Rc};
 
-use crate::{atom::Atom, builtin};
+use crate::{atom::Atom, builtin, evaluator::EvalError};
 
 pub(crate) struct Env {
     pub(crate) table: HashMap<String, Atom>,
@@ -15,14 +15,14 @@ impl Env {
         }
     }
 
-    pub(crate) fn get(&self, name: &str) -> Option<&Atom> {
+    pub(crate) fn get(&self, name: &str) -> Result<&Atom, EvalError> {
         if let Some(val) = self.table.get(name) {
-            return Some(val);
+            return Ok(val);
         }
         if let Some(parent) = &self.parent {
             return parent.get(name);
         }
-        None
+        Err(EvalError(format!("Name {} not found", name)))
     }
 
     pub(crate) fn set(&mut self, name: &str, val: &Atom) {
