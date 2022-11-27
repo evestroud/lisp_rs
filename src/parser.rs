@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::{collections::VecDeque, fmt};
 
 use crate::atom::Atom;
@@ -12,10 +13,29 @@ impl fmt::Display for ParseError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub(crate) enum Exp {
     SubExp(Vec<Exp>),
     Literal(Atom),
+}
+
+impl Display for Exp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let this = match self {
+            Exp::SubExp(exp) => {
+                // recursively parse subexpressions
+                format!(
+                    "({})",
+                    exp.iter()
+                        .map(|e| e.to_string())
+                        .collect::<Vec<String>>()
+                        .join(" ")
+                )
+            }
+            Exp::Literal(atom) => atom.to_string(),
+        };
+        write!(f, "{}", this)
+    }
 }
 
 pub(crate) fn parse(tokens: &mut VecDeque<Token>) -> Result<Exp, ParseError> {
