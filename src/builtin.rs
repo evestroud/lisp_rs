@@ -40,7 +40,7 @@ pub(crate) fn builtins_map() -> HashMap<String, Atom> {
     ])
 }
 
-fn validate_num_args(args: &Vec<Atom>, min: usize, max: usize) -> Result<(), EvalError> {
+pub(crate) fn validate_num_args<T>(args: &Vec<T>, min: usize, max: usize) -> Result<(), EvalError> {
     match args.len() >= min {
         true => Ok(()),
         false => Err(EvalError(format!(
