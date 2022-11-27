@@ -35,6 +35,28 @@ pub(crate) fn builtins_map() -> HashMap<String, Atom> {
     ])
 }
 
+fn validate_num_args(args: &Vec<Atom>, min: usize, max: usize) -> Result<(), EvalError> {
+    match args.len() >= min {
+        true => Ok(()),
+        false => Err(EvalError(format!(
+            "Expected at least {} args, found {}",
+            min,
+            args.len(),
+        ))),
+    }?;
+    if max > min {
+        match args.len() <= max {
+            true => Ok(()),
+            false => Err(EvalError(format!(
+                "Procedure takes a maximum of {} args, found {}",
+                max,
+                args.len(),
+            ))),
+        }?;
+    }
+    Ok(())
+}
+
 pub(crate) fn add(args: Vec<Atom>, _: &mut Env) -> Result<Atom, EvalError> {
     let mut result = Rational::from(0.0);
     for item in args {
