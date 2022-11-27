@@ -69,16 +69,14 @@ pub(crate) fn add(args: Vec<Atom>, _: &mut Env) -> Result<Atom, EvalError> {
 }
 
 pub(crate) fn sub(args: Vec<Atom>, _: &mut Env) -> Result<Atom, EvalError> {
+    validate_num_args(&args, 1, 0)?;
     let mut result;
-    if let Some(val) = args.get(0) {
-        result = match val {
-            Atom::Number(num) => num.clone(),
-            _ => return Err(EvalError(format!("Expected a number, found {:?}", val))),
-        }
+    let first = args.get(0).unwrap();
+
+    if let Atom::Number(num) = first {
+        result = num.clone()
     } else {
-        return Err(EvalError(
-            "- expects at least one argument, found none".to_string(),
-        ));
+        return Err(EvalError(format!("Expected a number, found {:?}", first)));
     }
 
     if args.len() == 1 {
@@ -106,12 +104,7 @@ pub(crate) fn mul(args: Vec<Atom>, _: &mut Env) -> Result<Atom, EvalError> {
 }
 
 pub(crate) fn div(args: Vec<Atom>, _: &mut Env) -> Result<Atom, EvalError> {
-    if args.len() != 2 {
-        return Err(EvalError(format!(
-            "/ takes 2 arguments, found {}",
-            args.len()
-        )));
-    }
+    validate_num_args(&args, 2, 2)?;
     let mut args = args.iter();
     let num = args.next().unwrap();
     let den = args.next().unwrap();
