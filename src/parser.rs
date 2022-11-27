@@ -38,6 +38,14 @@ impl Display for Exp {
     }
 }
 
+pub(crate) fn parse_all(tokens: &mut VecDeque<Token>) -> Result<Vec<Exp>, ParseError> {
+    let mut result = Vec::new();
+    while tokens.len() != 0 {
+        result.push(parse(tokens)?);
+    }
+    Ok(result)
+}
+
 pub(crate) fn parse(tokens: &mut VecDeque<Token>) -> Result<Exp, ParseError> {
     if tokens.len() == 0 {
         return Err(ParseError("Unexpected EOF while parsing".to_string()));

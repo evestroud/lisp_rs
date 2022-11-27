@@ -1,4 +1,4 @@
-use crate::{evaluator::evaluate, parser::parse, tokenizer::tokenize};
+use crate::{evaluator::eval_all, parser::parse_all, tokenizer::tokenize};
 use rustyline::error::ReadlineError;
 use rustyline::{Editor, Result};
 
@@ -23,8 +23,8 @@ fn main() -> Result<()> {
                 }
                 rl.add_history_entry(line.as_str());
                 match tokenize(&line) {
-                    Ok(mut tokens) => match parse(&mut tokens) {
-                        Ok(expression) => match evaluate(&expression, &mut env) {
+                    Ok(mut tokens) => match parse_all(&mut tokens) {
+                        Ok(expression) => match eval_all(&expression, &mut env) {
                             Ok(output) => match output.to_string().as_str() {
                                 "Nil" => (),
                                 _ => println!("{}", output),

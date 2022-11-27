@@ -11,6 +11,14 @@ impl fmt::Display for EvalError {
     }
 }
 
+pub(crate) fn eval_all(input: &Vec<Exp>, env: &mut Env) -> Result<Atom, EvalError> {
+    let mut result = Atom::Nil;
+    for exp in input {
+        result = evaluate(exp, env)?;
+    }
+    Ok(result)
+}
+
 pub(crate) fn evaluate(input: &Exp, env: &mut Env) -> Result<Atom, EvalError> {
     match input {
         Exp::SubExp(list) => apply(list, env),
