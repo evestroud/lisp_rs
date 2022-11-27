@@ -11,7 +11,7 @@ pub(crate) enum Atom {
     Symbol(String),
     Nil,
     Builtin(Rc<Builtin>),
-    SpecialForm(String),
+    SpecialForm(SpecialForm),
     Quote(Box<Exp>),
 }
 
@@ -26,6 +26,25 @@ impl Display for Atom {
             Atom::Quote(exp) => format!("'{}", exp),
         };
         write!(f, "{}", val)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) enum SpecialForm {
+    Define,
+    Let,
+}
+
+impl Display for SpecialForm {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                SpecialForm::Define => "define".to_string(),
+                SpecialForm::Let => "let".to_string(),
+            }
+        )
     }
 }
 

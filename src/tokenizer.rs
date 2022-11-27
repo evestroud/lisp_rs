@@ -37,10 +37,19 @@ pub(crate) fn tokenize(input: &str) -> Result<VecDeque<Token>, SyntaxError> {
                                 .map_err(|_| SyntaxError("Invalid number literal".to_string()))?,
                         ))))
                     } else {
-                        if ["define"].contains(&token) {
-                            return Ok(Token::Literal(Atom::SpecialForm(token.to_string())));
+                        match token {
+                            "define" => {
+                                return Ok(Token::Literal(Atom::SpecialForm(
+                                    crate::atom::SpecialForm::Define,
+                                )))
+                            }
+                            "let" => {
+                                return Ok(Token::Literal(Atom::SpecialForm(
+                                    crate::atom::SpecialForm::Let,
+                                )))
+                            }
+                            _ => return Ok(Token::Literal(Atom::Symbol(token.to_string()))),
                         }
-                        Ok(Token::Literal(Atom::Symbol(token.to_string())))
                     }
                 } else {
                     Err(SyntaxError("Tried to parse empty token".to_string()))
