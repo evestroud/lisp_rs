@@ -20,7 +20,7 @@ impl Display for Atom {
         let val = match self {
             Atom::Number(n) => n.to_string(),
             Atom::Symbol(s) => s.to_string(),
-            Atom::Nil => todo!(),
+            Atom::Nil => "Nil".to_string(),
             Atom::Builtin(_) => "Builtin".to_string(), // TODO
             Atom::SpecialForm(f) => f.to_string(),
             Atom::Quote(exp) => format!("'{}", exp),

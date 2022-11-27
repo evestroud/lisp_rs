@@ -25,7 +25,10 @@ fn main() -> Result<()> {
                 match tokenize(&line) {
                     Ok(mut tokens) => match parse(&mut tokens) {
                         Ok(expression) => match evaluate(&expression, &mut env) {
-                            Ok(output) => println!("{}", output),
+                            Ok(output) => match output.to_string().as_str() {
+                                "Nil" => (),
+                                _ => println!("{}", output),
+                            },
                             Err(e) => println!("Evaluation Error: {}", e),
                         },
                         Err(e) => println!("Parse Error: {}", e),
