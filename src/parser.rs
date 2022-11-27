@@ -63,6 +63,7 @@ pub(crate) fn parse(tokens: &mut VecDeque<Token>) -> Result<Exp, ParseError> {
             Atom::Nil => Ok(Exp::Literal(Atom::Nil)),
             Atom::Builtin(_) => todo!(),
             Atom::SpecialForm(form) => Ok(Exp::Literal(Atom::SpecialForm(form.to_string()))),
+            Atom::Quote(exp) => Ok(Exp::Literal(Atom::Quote(exp.clone()))),
         },
     }
 }

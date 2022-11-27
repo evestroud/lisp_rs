@@ -22,6 +22,13 @@ pub(crate) fn evaluate(input: &Exp, env: &mut Env) -> Result<Atom, EvalError> {
                     Err(EvalError(format!("Symbol {} not found", symbol)))
                 }
             }
+            Atom::Quote(exp) => {
+                // ? not sure if this is correct
+                if let Exp::Literal(val) = *exp.clone() {
+                    return Ok(val.clone());
+                }
+                Ok(atom.clone())
+            }
             _ => Ok(atom.clone()),
         },
     }

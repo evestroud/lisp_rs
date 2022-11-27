@@ -3,7 +3,7 @@ use std::{
     rc::Rc,
 };
 
-use crate::builtin::Builtin;
+use crate::{builtin::Builtin, parser::Exp};
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum Atom {
@@ -12,6 +12,7 @@ pub(crate) enum Atom {
     Nil,
     Builtin(Rc<Builtin>),
     SpecialForm(String),
+    Quote(Box<Exp>),
 }
 
 impl Display for Atom {
@@ -22,6 +23,7 @@ impl Display for Atom {
             Atom::Nil => todo!(),
             Atom::Builtin(_) => "Builtin".to_string(), // TODO
             Atom::SpecialForm(f) => f.to_string(),
+            Atom::Quote(exp) => format!("'{}", exp),
         };
         write!(f, "{}", val)
     }
