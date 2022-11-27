@@ -1,9 +1,10 @@
 use core::fmt;
+use std::rc::Rc;
 
 use crate::{
     atom::{Atom, SpecialForm},
     builtin::validate_num_args,
-    environment::Env,
+    environment::{create_closure, Env},
     parser::Exp,
 };
 
@@ -58,18 +59,39 @@ fn apply(list: &Vec<Exp>, env: &mut Env) -> Result<Atom, EvalError> {
         }
         Atom::SpecialForm(form) => match form {
             SpecialForm::Define => do_define_form(&list[1..], env),
-            SpecialForm::Let => todo!(),
+            SpecialForm::Let => do_let_form(&list[1..], env),
         },
         Atom::Nil => return Ok(Atom::Nil),
         _ => Err(EvalError(format!("Expected a symbol, found {:?}", first))),
     }
 }
 
+fn do_let_form(args: &[Exp], env: &mut Env) -> Result<Atom, EvalError> {
+    validate_num_args(&Vec::from(args), 2, 0)?;
+    let mut args_iter = args.iter();
+    let mut closure = create_closure(Rc::new(env));
+
+    match args_iter.next().unwrap() {
+        Exp::SubExp(pairs) => {
+            for pair in pairs {
+                if let Exp::SubExp(pair_vec) = pair {
+                    do_define_form(pair_vec, &mut closure)?;
+                }
+            }
+        }
+        Exp::Literal(_) => return Err(EvalError("Expected a list".to_string())),
+    }
+    eval_all(
+        &args_iter.map(|arg| arg.clone()).collect::<Vec<Exp>>(),
+        &mut closure,
+    )
+}
+
 fn do_define_form(args: &[Exp], env: &mut Env) -> Result<Atom, EvalError> {
     validate_num_args(&Vec::from(args), 2, 2)?;
-    let mut list_iter = args.iter();
-    let second = evaluate(&as_quote(list_iter.next().unwrap()), env)?;
-    let third = evaluate(list_iter.next().unwrap(), env)?;
+    let mut args_iter = args.iter();
+    let second = evaluate(&as_quote(args_iter.next().unwrap()), env)?;
+    let third = evaluate(args_iter.next().unwrap(), env)?;
     if let Atom::Symbol(symbol) = second {
         env.set(&symbol, &third);
     } else {
