@@ -2,12 +2,13 @@ use std::{collections::HashMap, rc::Rc};
 
 use crate::{atom::Atom, builtin, evaluator::EvalError};
 
-pub(crate) struct Env {
+#[derive(Debug)]
+pub(crate) struct Env<'a> {
     pub(crate) table: HashMap<String, Atom>,
-    parent: Option<Rc<Env>>,
+    parent: Option<Rc<&'a Env<'a>>>,
 }
 
-impl Env {
+impl Env<'_> {
     pub(crate) fn new() -> Self {
         Self {
             table: builtin::builtins_map(),
@@ -28,11 +29,11 @@ impl Env {
     pub(crate) fn set(&mut self, name: &str, val: &Atom) {
         self.table.insert(name.to_string(), val.clone());
     }
+}
 
-    pub(crate) fn create_closure(self) -> Self {
-        Self {
-            table: HashMap::new(),
-            parent: Some(Rc::new(self)),
-        }
+pub(crate) fn create_closure<'a>(parent: Rc<&'a Env<'a>>) -> Env<'a> {
+    Env {
+        table: HashMap::new(),
+        parent: Some(parent),
     }
 }
