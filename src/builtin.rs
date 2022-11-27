@@ -33,10 +33,6 @@ pub(crate) fn builtins_map() -> HashMap<String, Atom> {
         ("-".to_string(), Atom::Builtin(Rc::from(Builtin(&sub)))),
         ("*".to_string(), Atom::Builtin(Rc::from(Builtin(&mul)))),
         ("/".to_string(), Atom::Builtin(Rc::from(Builtin(&div)))),
-        (
-            "define".to_string(),
-            Atom::Builtin(Rc::from(Builtin(&define))),
-        ),
     ])
 }
 
@@ -60,19 +56,6 @@ pub(crate) fn validate_num_args<T>(args: &Vec<T>, min: usize, max: usize) -> Res
         }?;
     }
     Ok(())
-}
-
-pub(crate) fn define(args: Vec<Atom>, env: &mut Env) -> Result<Atom, EvalError> {
-    validate_num_args(&args, 2, 2)?;
-    let (name, val) = (args.get(0).unwrap(), args.get(0).unwrap());
-    if let Atom::Symbol(n) = name {
-        env.set(n, val);
-        Ok(Atom::Nil)
-    } else {
-        Err(EvalError(
-            "Define requires a symbol for the first argument".to_string(),
-        ))
-    }
 }
 
 pub(crate) fn add(args: Vec<Atom>, _: &mut Env) -> Result<Atom, EvalError> {

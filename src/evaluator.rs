@@ -1,6 +1,6 @@
 use core::fmt;
 
-use crate::{atom::Atom, environment::Env, parser::Exp};
+use crate::{atom::Atom, builtin::validate_num_args, environment::Env, parser::Exp};
 
 #[derive(Debug, Clone)]
 pub(crate) struct EvalError(pub(crate) String);
@@ -50,9 +50,27 @@ fn apply(list: &Vec<Exp>, env: &mut Env) -> Result<Atom, EvalError> {
             f.0(rest, env)
         }
         Atom::SpecialForm(form) => match form.as_str() {
+            "define" => do_define_form(&list[1..], env),
             _ => Err(EvalError(format!("Invalid special form {}", form))),
         },
         Atom::Nil => return Ok(Atom::Nil),
         _ => Err(EvalError(format!("Expected a symbol, found {:?}", first))),
     }
+}
+
+fn do_define_form(args: &[Exp], env: &mut Env) -> Result<Atom, EvalError> {
+    validate_num_args(&Vec::from(args), 2, 2)?;
+    let mut list_iter = args.iter();
+    let second = evaluate(&as_quote(list_iter.next().unwrap()), env)?;
+    let third = evaluate(list_iter.next().unwrap(), env)?;
+    if let Atom::Symbol(symbol) = second {
+        env.set(&symbol, &third);
+    } else {
+        return Err(EvalError(format!("Expected a symbol, found {}", second)));
+    }
+    Ok(Atom::Nil)
+}
+
+fn as_quote(exp: &Exp) -> Exp {
+    Exp::Literal(Atom::Quote(Box::new(exp.clone())))
 }
