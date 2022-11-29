@@ -1,15 +1,9 @@
-use std::{collections::VecDeque, fmt};
+use std::collections::VecDeque;
 
-use crate::atom::{Atom, Rational};
-
-#[derive(Debug)]
-pub(crate) struct SyntaxError(String);
-
-impl fmt::Display for SyntaxError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
+use crate::{
+    atom::{rational::Rational, Atom},
+    lib::SchemeError,
+};
 
 #[derive(Debug, PartialEq)]
 pub(crate) enum Token {
@@ -18,7 +12,7 @@ pub(crate) enum Token {
     Literal(Atom),
 }
 
-pub(crate) fn tokenize(input: &str) -> Result<VecDeque<Token>, SyntaxError> {
+pub(crate) fn tokenize(input: &str) -> Result<VecDeque<Token>, SchemeError> {
     input
         .replace("(", " ( ")
         .replace(")", " ) ")
@@ -34,7 +28,7 @@ pub(crate) fn tokenize(input: &str) -> Result<VecDeque<Token>, SyntaxError> {
                         Ok(Token::Literal(Atom::Number(Rational::from(
                             token
                                 .parse::<f32>()
-                                .map_err(|_| SyntaxError("Invalid number literal".to_string()))?,
+                                .map_err(|_| SchemeError("Invalid number literal".to_string()))?,
                         ))))
                     } else {
                         match token {
@@ -52,7 +46,7 @@ pub(crate) fn tokenize(input: &str) -> Result<VecDeque<Token>, SyntaxError> {
                         }
                     }
                 } else {
-                    Err(SyntaxError("Tried to parse empty token".to_string()))
+                    Err(SchemeError("Tried to parse empty token".to_string()))
                 }
             }
         })

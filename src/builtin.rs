@@ -1,12 +1,13 @@
-use crate::atom::{Atom, Rational};
+use crate::atom::{rational::Rational, Atom};
 use crate::environment::Env;
-use crate::evaluator::EvalError;
+use crate::lib::validate_num_args;
+use crate::lib::SchemeError;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::rc::Rc;
 
 pub(crate) struct Builtin(
-    pub(crate) &'static dyn Fn(Vec<Atom>, &mut Env) -> Result<Atom, EvalError>,
+    pub(crate) &'static dyn Fn(Vec<Atom>, &mut Env) -> Result<Atom, SchemeError>,
     // TODO make this a full struct that contains the name
 );
 
@@ -36,40 +37,18 @@ pub(crate) fn builtins_map() -> HashMap<String, Atom> {
     ])
 }
 
-pub(crate) fn validate_num_args<T>(args: &Vec<T>, min: usize, max: usize) -> Result<(), EvalError> {
-    match args.len() >= min {
-        true => Ok(()),
-        false => Err(EvalError(format!(
-            "Expected at least {} args, found {}",
-            min,
-            args.len(),
-        ))),
-    }?;
-    if max > min {
-        match args.len() <= max {
-            true => Ok(()),
-            false => Err(EvalError(format!(
-                "Procedure takes a maximum of {} args, found {}",
-                max,
-                args.len(),
-            ))),
-        }?;
-    }
-    Ok(())
-}
-
-pub(crate) fn add(args: Vec<Atom>, _: &mut Env) -> Result<Atom, EvalError> {
+pub(crate) fn add(args: Vec<Atom>, _: &mut Env) -> Result<Atom, SchemeError> {
     let mut result = Rational::from(0.0);
     for item in args {
         match item {
             Atom::Number(val) => result = result.add(&val),
-            _ => return Err(EvalError(format!("Expected a number, found {:?}", item))),
+            _ => return Err(SchemeError(format!("Expected a number, found {:?}", item))),
         };
     }
     Ok(Atom::Number(result))
 }
 
-pub(crate) fn sub(args: Vec<Atom>, _: &mut Env) -> Result<Atom, EvalError> {
+pub(crate) fn sub(args: Vec<Atom>, _: &mut Env) -> Result<Atom, SchemeError> {
     validate_num_args(&args, 1, 0)?;
     let mut result;
     let first = args.get(0).unwrap();
@@ -77,7 +56,7 @@ pub(crate) fn sub(args: Vec<Atom>, _: &mut Env) -> Result<Atom, EvalError> {
     if let Atom::Number(num) = first {
         result = num.clone()
     } else {
-        return Err(EvalError(format!("Expected a number, found {:?}", first)));
+        return Err(SchemeError(format!("Expected a number, found {:?}", first)));
     }
 
     if args.len() == 1 {
@@ -87,31 +66,31 @@ pub(crate) fn sub(args: Vec<Atom>, _: &mut Env) -> Result<Atom, EvalError> {
     for item in args[1..].iter() {
         match item {
             Atom::Number(val) => result = result.sub(&val),
-            _ => return Err(EvalError(format!("Expected a number, found {:?}", item))),
+            _ => return Err(SchemeError(format!("Expected a number, found {:?}", item))),
         };
     }
     Ok(Atom::Number(result))
 }
 
-pub(crate) fn mul(args: Vec<Atom>, _: &mut Env) -> Result<Atom, EvalError> {
+pub(crate) fn mul(args: Vec<Atom>, _: &mut Env) -> Result<Atom, SchemeError> {
     let mut result = Rational::from(1.0);
     for item in args {
         match item {
             Atom::Number(val) => result = result.mul(&val),
-            _ => return Err(EvalError(format!("Expected a number, found {:?}", item))),
+            _ => return Err(SchemeError(format!("Expected a number, found {:?}", item))),
         }
     }
     Ok(Atom::Number(result))
 }
 
-pub(crate) fn div(args: Vec<Atom>, _: &mut Env) -> Result<Atom, EvalError> {
+pub(crate) fn div(args: Vec<Atom>, _: &mut Env) -> Result<Atom, SchemeError> {
     validate_num_args(&args, 2, 2)?;
     let mut args = args.iter();
     let num = args.next().unwrap();
     let den = args.next().unwrap();
     match (num, den) {
         (Atom::Number(n), Atom::Number(d)) => Ok(Atom::Number(n.div(&d))),
-        _ => Err(EvalError(format!(
+        _ => Err(SchemeError(format!(
             "Expected two numbers, found {} and {}",
             num, den
         ))),

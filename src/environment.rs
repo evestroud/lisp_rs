@@ -1,6 +1,6 @@
 use std::{collections::HashMap, rc::Rc};
 
-use crate::{atom::Atom, builtin, evaluator::EvalError};
+use crate::{atom::Atom, builtin::builtins_map, lib::SchemeError};
 
 #[derive(Debug)]
 pub(crate) struct Env<'a> {
@@ -11,19 +11,19 @@ pub(crate) struct Env<'a> {
 impl Env<'_> {
     pub(crate) fn new() -> Self {
         Self {
-            table: builtin::builtins_map(),
+            table: builtins_map(),
             parent: None,
         }
     }
 
-    pub(crate) fn get(&self, name: &str) -> Result<&Atom, EvalError> {
+    pub(crate) fn get(&self, name: &str) -> Result<&Atom, SchemeError> {
         if let Some(val) = self.table.get(name) {
             return Ok(val);
         }
         if let Some(parent) = &self.parent {
             return parent.get(name);
         }
-        Err(EvalError(format!("Name {} not found", name)))
+        Err(SchemeError(format!("Name {} not found", name)))
     }
 
     pub(crate) fn set(&mut self, name: &str, val: &Atom) {

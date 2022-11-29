@@ -1,23 +1,13 @@
-use core::fmt;
 use std::rc::Rc;
 
 use crate::{
     atom::{Atom, SpecialForm},
-    builtin::validate_num_args,
     environment::{create_closure, Env},
+    lib::{validate_num_args, SchemeError},
     parser::Exp,
 };
 
-#[derive(Debug, Clone)]
-pub(crate) struct EvalError(pub(crate) String);
-
-impl fmt::Display for EvalError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0)
-    }
-}
-
-pub(crate) fn eval_all(input: &Vec<Exp>, env: &mut Env) -> Result<Atom, EvalError> {
+pub(crate) fn eval_all(input: &Vec<Exp>, env: &mut Env) -> Result<Atom, SchemeError> {
     let mut result = Atom::Nil;
     for exp in input {
         result = evaluate(exp, env)?;
@@ -25,7 +15,7 @@ pub(crate) fn eval_all(input: &Vec<Exp>, env: &mut Env) -> Result<Atom, EvalErro
     Ok(result)
 }
 
-pub(crate) fn evaluate(input: &Exp, env: &mut Env) -> Result<Atom, EvalError> {
+pub(crate) fn evaluate(input: &Exp, env: &mut Env) -> Result<Atom, SchemeError> {
     match input {
         Exp::SubExp(list) => apply(list, env),
         Exp::Literal(atom) => match atom {
@@ -42,7 +32,7 @@ pub(crate) fn evaluate(input: &Exp, env: &mut Env) -> Result<Atom, EvalError> {
     }
 }
 
-fn apply(list: &Vec<Exp>, env: &mut Env) -> Result<Atom, EvalError> {
+fn apply(list: &Vec<Exp>, env: &mut Env) -> Result<Atom, SchemeError> {
     let mut list_iter = list.iter();
     let first = evaluate(
         list_iter.next().unwrap_or_else(|| &Exp::Literal(Atom::Nil)),
@@ -62,11 +52,11 @@ fn apply(list: &Vec<Exp>, env: &mut Env) -> Result<Atom, EvalError> {
             SpecialForm::Let => do_let_form(&list[1..], env),
         },
         Atom::Nil => return Ok(Atom::Nil),
-        _ => Err(EvalError(format!("Expected a symbol, found {:?}", first))),
+        _ => Err(SchemeError(format!("Expected a symbol, found {:?}", first))),
     }
 }
 
-fn do_let_form(args: &[Exp], env: &mut Env) -> Result<Atom, EvalError> {
+fn do_let_form(args: &[Exp], env: &mut Env) -> Result<Atom, SchemeError> {
     validate_num_args(&Vec::from(args), 2, 0)?;
     let mut args_iter = args.iter();
     let mut closure = create_closure(Rc::new(env));
@@ -79,7 +69,7 @@ fn do_let_form(args: &[Exp], env: &mut Env) -> Result<Atom, EvalError> {
                 }
             }
         }
-        Exp::Literal(_) => return Err(EvalError("Expected a list".to_string())),
+        Exp::Literal(_) => return Err(SchemeError("Expected a list".to_string())),
     }
     eval_all(
         &args_iter.map(|arg| arg.clone()).collect::<Vec<Exp>>(),
@@ -87,7 +77,7 @@ fn do_let_form(args: &[Exp], env: &mut Env) -> Result<Atom, EvalError> {
     )
 }
 
-fn do_define_form(args: &[Exp], env: &mut Env) -> Result<Atom, EvalError> {
+fn do_define_form(args: &[Exp], env: &mut Env) -> Result<Atom, SchemeError> {
     validate_num_args(&Vec::from(args), 2, 2)?;
     let mut args_iter = args.iter();
     let second = evaluate(&as_quote(args_iter.next().unwrap()), env)?;
@@ -95,7 +85,7 @@ fn do_define_form(args: &[Exp], env: &mut Env) -> Result<Atom, EvalError> {
     if let Atom::Symbol(symbol) = second {
         env.set(&symbol, &third);
     } else {
-        return Err(EvalError(format!("Expected a symbol, found {}", second)));
+        return Err(SchemeError(format!("Expected a symbol, found {}", second)));
     }
     Ok(Atom::Nil)
 }

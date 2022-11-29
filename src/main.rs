@@ -6,6 +6,7 @@ mod atom;
 mod builtin;
 mod environment;
 mod evaluator;
+mod lib;
 mod parser;
 mod tokenizer;
 
