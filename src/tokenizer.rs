@@ -1,15 +1,18 @@
 use std::collections::VecDeque;
 
-use crate::{
-    atom::{rational::Rational, Atom, Literal},
-    lib::SchemeError,
-};
+use crate::{atom::rational::Rational, lib::SchemeError};
 
 #[derive(Debug, PartialEq)]
 pub(crate) enum Token {
     StartExp,
     EndExp,
     Literal(Literal),
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) enum Literal {
+    Number(Rational),
+    Symbol(String),
 }
 
 pub(crate) fn tokenize(input: &str) -> Result<VecDeque<Token>, SchemeError> {

@@ -1,9 +1,9 @@
 use std::fmt::Display;
 use std::{collections::VecDeque, fmt};
 
-use crate::atom::{Atom, Literal};
+use crate::atom::Atom;
 use crate::lib::SchemeError;
-use crate::tokenizer::Token;
+use crate::tokenizer::{Literal, Token};
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum Exp {
@@ -59,8 +59,14 @@ pub(crate) fn parse(tokens: &mut VecDeque<Token>) -> Result<Exp, SchemeError> {
         Token::EndExp => Err(SchemeError("Unmatched ')'".to_string())),
         Token::Literal(atom) => match atom {
             Literal::Number(num) => Ok(Exp::Literal(Atom::Number(num.clone()))),
-            Literal::Symbol(symbol) => Ok(Exp::Literal(Atom::Symbol(symbol.to_string()))),
-            Literal::Nil => Ok(Exp::Literal(Atom::Nil)),
+            Literal::Symbol(symbol) => {
+                Ok(Exp::Literal(match symbol.to_ascii_lowercase().as_str() {
+                    "nil" => Atom::Nil,
+                    "let" => Atom::SpecialForm(crate::atom::SpecialForm::Let),
+                    "define" => Atom::SpecialForm(crate::atom::SpecialForm::Define),
+                    _ => Atom::Symbol(symbol.to_string()),
+                }))
+            }
         },
     }
 }
