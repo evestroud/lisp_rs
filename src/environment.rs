@@ -2,7 +2,7 @@ use std::{collections::HashMap, rc::Rc};
 
 use crate::{atom::Atom, builtin::builtins_map, lib::SchemeError};
 
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub(crate) struct Env<'a> {
     pub(crate) table: HashMap<String, Atom>,
     parent: Option<Rc<&'a Env<'a>>>,

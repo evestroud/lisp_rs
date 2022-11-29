@@ -54,3 +54,21 @@ impl Display for SpecialForm {
         )
     }
 }
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct Lambda<'a> {
+    params: Vec<String>,
+    body: Exp,
+    env: Env<'a>,
+}
+
+impl Lambda<'_> {
+    pub(crate) fn eval(&mut self, args: Vec<Atom>) -> Result<Atom, SchemeError> {
+        validate_num_args(&args, self.params.len(), self.params.len())?;
+        for (name, val) in self.params.iter().zip(args) {
+            self.env.set(name, &val);
+        }
+
+        evaluate(&self.body, &mut self.env)
+    }
+}
