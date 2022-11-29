@@ -10,6 +10,8 @@ use std::{
     rc::Rc,
 };
 
+use self::rational::Rational;
+
 pub mod rational;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -20,6 +22,13 @@ pub(crate) enum Atom {
     Builtin(Rc<Builtin>),
     SpecialForm(SpecialForm),
     Quote(Box<Exp>),
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) enum Literal {
+    Number(Rational),
+    Symbol(String),
+    Nil,
 }
 
 impl Display for Atom {

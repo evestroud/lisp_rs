@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 
 use crate::{
-    atom::{rational::Rational, Atom},
+    atom::{rational::Rational, Atom, Literal},
     lib::SchemeError,
 };
 
@@ -9,7 +9,7 @@ use crate::{
 pub(crate) enum Token {
     StartExp,
     EndExp,
-    Literal(Atom),
+    Literal(Literal),
 }
 
 pub(crate) fn tokenize(input: &str) -> Result<VecDeque<Token>, SchemeError> {
@@ -25,25 +25,13 @@ pub(crate) fn tokenize(input: &str) -> Result<VecDeque<Token>, SchemeError> {
                     if c.is_ascii_digit()
                         || (['.', '-'].contains(&c) && ![".", "-"].contains(&token))
                     {
-                        Ok(Token::Literal(Atom::Number(Rational::from(
+                        Ok(Token::Literal(Literal::Number(Rational::from(
                             token
                                 .parse::<f32>()
                                 .map_err(|_| SchemeError("Invalid number literal".to_string()))?,
                         ))))
                     } else {
-                        match token {
-                            "define" => {
-                                return Ok(Token::Literal(Atom::SpecialForm(
-                                    crate::atom::SpecialForm::Define,
-                                )))
-                            }
-                            "let" => {
-                                return Ok(Token::Literal(Atom::SpecialForm(
-                                    crate::atom::SpecialForm::Let,
-                                )))
-                            }
-                            _ => return Ok(Token::Literal(Atom::Symbol(token.to_string()))),
-                        }
+                        Ok(Token::Literal(Literal::Symbol(token.to_string())))
                     }
                 } else {
                     Err(SchemeError("Tried to parse empty token".to_string()))
