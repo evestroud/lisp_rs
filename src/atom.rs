@@ -6,6 +6,7 @@ use crate::{
     parser::Exp,
 };
 use std::{
+    cell::RefCell,
     fmt::{Debug, Display},
     rc::Rc,
 };
@@ -56,17 +57,17 @@ impl Display for SpecialForm {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub(crate) struct Lambda<'a> {
+pub(crate) struct Lambda {
     params: Vec<String>,
     body: Exp,
-    env: Env<'a>,
+    env: Rc<RefCell<Env>>,
 }
 
-impl Lambda<'_> {
+impl Lambda {
     pub(crate) fn eval(&mut self, args: Vec<Atom>) -> Result<Atom, SchemeError> {
         validate_num_args(&args, self.params.len(), self.params.len())?;
         for (name, val) in self.params.iter().zip(args) {
-            self.env.set(name, &val);
+            self.env.borrow_mut().set(name, &val);
         }
 
         evaluate(&self.body, &mut self.env)

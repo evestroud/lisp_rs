@@ -2,12 +2,13 @@ use crate::atom::{rational::Rational, Atom};
 use crate::environment::Env;
 use crate::lib::validate_num_args;
 use crate::lib::SchemeError;
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::rc::Rc;
 
 pub(crate) struct Builtin(
-    pub(crate) &'static dyn Fn(Vec<Atom>, &mut Env) -> Result<Atom, SchemeError>,
+    pub(crate) &'static dyn Fn(Vec<Atom>, &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError>,
     // TODO make this a full struct that contains the name
 );
 
@@ -37,7 +38,7 @@ pub(crate) fn builtins_map() -> HashMap<String, Atom> {
     ])
 }
 
-pub(crate) fn add(args: Vec<Atom>, _: &mut Env) -> Result<Atom, SchemeError> {
+pub(crate) fn add(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
     let mut result = Rational::from(0.0);
     for item in args {
         match item {
@@ -48,7 +49,7 @@ pub(crate) fn add(args: Vec<Atom>, _: &mut Env) -> Result<Atom, SchemeError> {
     Ok(Atom::Number(result))
 }
 
-pub(crate) fn sub(args: Vec<Atom>, _: &mut Env) -> Result<Atom, SchemeError> {
+pub(crate) fn sub(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
     validate_num_args(&args, 1, 0)?;
     let mut result;
     let first = args.get(0).unwrap();
@@ -72,7 +73,7 @@ pub(crate) fn sub(args: Vec<Atom>, _: &mut Env) -> Result<Atom, SchemeError> {
     Ok(Atom::Number(result))
 }
 
-pub(crate) fn mul(args: Vec<Atom>, _: &mut Env) -> Result<Atom, SchemeError> {
+pub(crate) fn mul(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
     let mut result = Rational::from(1.0);
     for item in args {
         match item {
@@ -83,7 +84,7 @@ pub(crate) fn mul(args: Vec<Atom>, _: &mut Env) -> Result<Atom, SchemeError> {
     Ok(Atom::Number(result))
 }
 
-pub(crate) fn div(args: Vec<Atom>, _: &mut Env) -> Result<Atom, SchemeError> {
+pub(crate) fn div(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
     validate_num_args(&args, 2, 2)?;
     let mut args = args.iter();
     let num = args.next().unwrap();

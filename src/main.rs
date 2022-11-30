@@ -1,4 +1,8 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use crate::{evaluator::eval_all, parser::parse_all, tokenizer::tokenize};
+use environment::Env;
 use rustyline::error::ReadlineError;
 use rustyline::{Editor, Result};
 
@@ -13,7 +17,7 @@ mod tokenizer;
 fn main() -> Result<()> {
     let mut rl = Editor::<()>::new()?;
 
-    let mut env = environment::Env::new();
+    let mut env = Rc::new(RefCell::new(Env::new()));
 
     loop {
         let readline = rl.readline("> ");

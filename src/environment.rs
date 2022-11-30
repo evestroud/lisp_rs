@@ -1,14 +1,14 @@
-use std::{collections::HashMap, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::{atom::Atom, builtin::builtins_map, lib::SchemeError};
 
 #[derive(Clone, Debug, PartialEq)]
-pub(crate) struct Env<'a> {
+pub(crate) struct Env {
     pub(crate) table: HashMap<String, Atom>,
-    parent: Option<Rc<&'a Env<'a>>>,
+    parent: Option<Rc<RefCell<Env>>>,
 }
 
-impl Env<'_> {
+impl Env {
     pub(crate) fn new() -> Self {
         Self {
             table: builtins_map(),
@@ -16,12 +16,14 @@ impl Env<'_> {
         }
     }
 
-    pub(crate) fn get(&self, name: &str) -> Result<&Atom, SchemeError> {
+    pub(crate) fn get(&self, name: &str) -> Result<Atom, SchemeError> {
         if let Some(val) = self.table.get(name) {
-            return Ok(val);
+            return Ok(val.clone());
         }
         if let Some(parent) = &self.parent {
-            return parent.get(name);
+            if let Ok(val) = parent.borrow().get(name) {
+                return Ok(val.clone());
+            }
         }
         Err(SchemeError(format!("Name {} not found", name)))
     }
@@ -31,7 +33,7 @@ impl Env<'_> {
     }
 }
 
-pub(crate) fn create_closure<'a>(parent: Rc<&'a Env<'a>>) -> Env<'a> {
+pub(crate) fn create_closure<'a>(parent: Rc<RefCell<Env>>) -> Env {
     Env {
         table: HashMap::new(),
         parent: Some(parent),

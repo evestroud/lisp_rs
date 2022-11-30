@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     atom::{Atom, SpecialForm},
@@ -7,7 +7,7 @@ use crate::{
     parser::Exp,
 };
 
-pub(crate) fn eval_all(input: &Vec<Exp>, env: &mut Env) -> Result<Atom, SchemeError> {
+pub(crate) fn eval_all(input: &Vec<Exp>, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
     let mut result = Atom::Nil;
     for exp in input {
         result = evaluate(exp, env)?;
@@ -15,11 +15,11 @@ pub(crate) fn eval_all(input: &Vec<Exp>, env: &mut Env) -> Result<Atom, SchemeEr
     Ok(result)
 }
 
-pub(crate) fn evaluate(input: &Exp, env: &mut Env) -> Result<Atom, SchemeError> {
+pub(crate) fn evaluate(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
     match input {
         Exp::SubExp(list) => apply(list, env),
         Exp::Literal(atom) => match atom {
-            Atom::Symbol(symbol) => env.get(&symbol).map(|val| val.clone()),
+            Atom::Symbol(symbol) => env.borrow().get(&symbol).map(|val| val.clone()),
             Atom::Quote(exp) => {
                 // ? not sure if this is correct
                 if let Exp::Literal(val) = *exp.clone() {
@@ -32,7 +32,7 @@ pub(crate) fn evaluate(input: &Exp, env: &mut Env) -> Result<Atom, SchemeError> 
     }
 }
 
-fn apply(list: &Vec<Exp>, env: &mut Env) -> Result<Atom, SchemeError> {
+fn apply(list: &Vec<Exp>, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
     let mut list_iter = list.iter();
     let first = evaluate(
         list_iter.next().unwrap_or_else(|| &Exp::Literal(Atom::Nil)),
@@ -56,10 +56,10 @@ fn apply(list: &Vec<Exp>, env: &mut Env) -> Result<Atom, SchemeError> {
     }
 }
 
-fn do_let_form(args: &[Exp], env: &mut Env) -> Result<Atom, SchemeError> {
+fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
     validate_num_args(&Vec::from(args), 2, 0)?;
     let mut args_iter = args.iter();
-    let mut closure = create_closure(Rc::new(env));
+    let mut closure = Rc::new(RefCell::new(create_closure(env.clone())));
 
     match args_iter.next().unwrap() {
         Exp::SubExp(pairs) => {
@@ -77,13 +77,13 @@ fn do_let_form(args: &[Exp], env: &mut Env) -> Result<Atom, SchemeError> {
     )
 }
 
-fn do_define_form(args: &[Exp], env: &mut Env) -> Result<Atom, SchemeError> {
+fn do_define_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
     validate_num_args(&Vec::from(args), 2, 2)?;
     let mut args_iter = args.iter();
     let second = evaluate(&as_quote(args_iter.next().unwrap()), env)?;
     let third = evaluate(args_iter.next().unwrap(), env)?;
     if let Atom::Symbol(symbol) = second {
-        env.set(&symbol, &third);
+        env.borrow_mut().set(&symbol, &third);
     } else {
         return Err(SchemeError(format!("Expected a symbol, found {}", second)));
     }
