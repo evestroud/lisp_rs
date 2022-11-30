@@ -62,9 +62,9 @@ impl Display for SpecialForm {
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct Lambda {
-    params: Vec<String>,
-    body: Exp,
-    env: Rc<RefCell<Env>>,
+    pub(crate) params: Vec<String>,
+    pub(crate) body: Exp,
+    pub(crate) env: Rc<RefCell<Env>>,
 }
 
 impl Lambda {
