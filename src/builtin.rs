@@ -4,13 +4,19 @@ use crate::lib::validate_num_args;
 use crate::lib::SchemeError;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 use std::rc::Rc;
 
-pub(crate) struct Builtin(
-    pub(crate) &'static dyn Fn(Vec<Atom>, &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError>,
-    // TODO make this a full struct that contains the name
-);
+pub(crate) struct Builtin {
+    pub(crate) func: &'static dyn Fn(Vec<Atom>, &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError>,
+    name: String,
+}
+
+impl Display for Builtin {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Builtin '{}", self.name)
+    }
+}
 
 impl Debug for Builtin {
     // https://stackoverflow.com/questions/38088067/equivalent-of-func-or-function-in-rust
@@ -31,10 +37,34 @@ impl PartialEq for Builtin {
 
 pub(crate) fn builtins_map() -> HashMap<String, Atom> {
     HashMap::from([
-        ("+".to_string(), Atom::Builtin(Rc::from(Builtin(&add)))),
-        ("-".to_string(), Atom::Builtin(Rc::from(Builtin(&sub)))),
-        ("*".to_string(), Atom::Builtin(Rc::from(Builtin(&mul)))),
-        ("/".to_string(), Atom::Builtin(Rc::from(Builtin(&div)))),
+        (
+            "+".to_string(),
+            Atom::Builtin(Rc::from(Builtin {
+                func: &add,
+                name: "+".to_string(),
+            })),
+        ),
+        (
+            "-".to_string(),
+            Atom::Builtin(Rc::from(Builtin {
+                func: &sub,
+                name: "-".to_string(),
+            })),
+        ),
+        (
+            "*".to_string(),
+            Atom::Builtin(Rc::from(Builtin {
+                func: &mul,
+                name: "*".to_string(),
+            })),
+        ),
+        (
+            "/".to_string(),
+            Atom::Builtin(Rc::from(Builtin {
+                func: &div,
+                name: "/".to_string(),
+            })),
+        ),
     ])
 }
 
