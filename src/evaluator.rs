@@ -79,11 +79,9 @@ fn do_lambda_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, Sche
         },
         None => todo!(),
     };
-    Ok(Atom::Lambda(Box::new(Lambda {
-        params,
-        body: todo!(),
-        env: todo!(),
-    })))
+    let body = args_iter.next().unwrap().clone();
+    let env = create_closure(env.clone());
+    Ok(Atom::Lambda(Box::new(Lambda { params, body, env })))
 }
 
 fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
