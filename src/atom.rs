@@ -33,7 +33,7 @@ impl Display for Atom {
             Atom::Builtin(_) => "Builtin".to_string(), // TODO
             Atom::SpecialForm(f) => f.to_string(),
             Atom::Quote(exp) => format!("'{}", exp),
-            Atom::Lambda(_) => "Lambda".to_string(),
+            Atom::Lambda(l) => l.to_string(),
         };
         write!(f, "{}", val)
     }
@@ -75,5 +75,12 @@ impl Lambda {
         }
 
         evaluate(&self.body, &mut self.env)
+    }
+}
+
+impl Display for Lambda {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let string = format!("(lambda ({}) {})", self.params.join(" "), self.body);
+        write!(f, "{}", string)
     }
 }
