@@ -21,6 +21,7 @@ pub(crate) enum Atom {
     Builtin(Rc<Builtin>),
     SpecialForm(SpecialForm),
     Quote(Box<Exp>),
+    Lambda(Box<Lambda>),
 }
 
 impl Display for Atom {
@@ -32,6 +33,7 @@ impl Display for Atom {
             Atom::Builtin(_) => "Builtin".to_string(), // TODO
             Atom::SpecialForm(f) => f.to_string(),
             Atom::Quote(exp) => format!("'{}", exp),
+            Atom::Lambda(_) => "Lambda".to_string(),
         };
         write!(f, "{}", val)
     }
@@ -41,6 +43,7 @@ impl Display for Atom {
 pub(crate) enum SpecialForm {
     Define,
     Let,
+    Lambda,
 }
 
 impl Display for SpecialForm {
@@ -51,6 +54,7 @@ impl Display for SpecialForm {
             match self {
                 SpecialForm::Define => "define".to_string(),
                 SpecialForm::Let => "let".to_string(),
+                SpecialForm::Lambda => "lambda".to_string(),
             }
         )
     }

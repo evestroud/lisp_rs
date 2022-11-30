@@ -1,7 +1,7 @@
 use std::fmt::Display;
 use std::{collections::VecDeque, fmt};
 
-use crate::atom::Atom;
+use crate::atom::{Atom, SpecialForm};
 use crate::lib::SchemeError;
 use crate::tokenizer::{Literal, Token};
 
@@ -62,8 +62,9 @@ pub(crate) fn parse(tokens: &mut VecDeque<Token>) -> Result<Exp, SchemeError> {
             Literal::Symbol(symbol) => {
                 Ok(Exp::Literal(match symbol.to_ascii_lowercase().as_str() {
                     "nil" => Atom::Nil,
-                    "let" => Atom::SpecialForm(crate::atom::SpecialForm::Let),
-                    "define" => Atom::SpecialForm(crate::atom::SpecialForm::Define),
+                    "let" => Atom::SpecialForm(SpecialForm::Let),
+                    "define" => Atom::SpecialForm(SpecialForm::Define),
+                    "lambda" => Atom::SpecialForm(SpecialForm::Lambda),
                     _ => Atom::Symbol(symbol.to_string()),
                 }))
             }

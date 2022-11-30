@@ -50,6 +50,7 @@ fn apply(list: &Vec<Exp>, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeErro
         Atom::SpecialForm(form) => match form {
             SpecialForm::Define => do_define_form(&list[1..], env),
             SpecialForm::Let => do_let_form(&list[1..], env),
+            SpecialForm::Lambda => todo!(),
         },
         Atom::Nil => return Ok(Atom::Nil),
         _ => Err(SchemeError(format!("Expected a symbol, found {:?}", first))),
