@@ -45,7 +45,7 @@ fn apply(list: &Vec<Exp>, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeErro
             for res in rest_results {
                 rest.push(res?);
             }
-            f.0(rest, env)
+            (f.func)(rest, env)
         }
         Atom::SpecialForm(form) => match form {
             SpecialForm::Define => do_define_form(&list[1..], env),
