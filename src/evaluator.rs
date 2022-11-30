@@ -1,7 +1,7 @@
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    atom::{Atom, SpecialForm},
+    atom::{Atom, Lambda, SpecialForm},
     environment::{create_closure, Env},
     lib::{validate_num_args, SchemeError},
     parser::Exp,
@@ -50,11 +50,40 @@ fn apply(list: &Vec<Exp>, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeErro
         Atom::SpecialForm(form) => match form {
             SpecialForm::Define => do_define_form(&list[1..], env),
             SpecialForm::Let => do_let_form(&list[1..], env),
-            SpecialForm::Lambda => todo!(),
+            SpecialForm::Lambda => do_lambda_form(&list[1..], env),
         },
         Atom::Nil => return Ok(Atom::Nil),
         _ => Err(SchemeError(format!("Expected a symbol, found {:?}", first))),
     }
+}
+
+fn do_lambda_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+    validate_num_args(&Vec::from(args), 2, 0)?;
+    let mut args_iter = args.iter();
+    let params = match args_iter.next() {
+        Some(param_args) => match param_args {
+            Exp::SubExp(param_list) => param_list
+                .iter()
+                .map(|arg| {
+                    let atom = evaluate(&as_quote(arg), env)?;
+                    match atom {
+                        Atom::Symbol(name) => Ok(name.to_string()),
+                        _ => Err(SchemeError(format!(
+                            "Parameter list expects symbols, found {}",
+                            atom
+                        ))),
+                    }
+                })
+                .collect::<Result<Vec<String>, SchemeError>>()?,
+            Exp::Literal(_) => todo!(),
+        },
+        None => todo!(),
+    };
+    Ok(Atom::Lambda(Box::new(Lambda {
+        params,
+        body: todo!(),
+        env: todo!(),
+    })))
 }
 
 fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
