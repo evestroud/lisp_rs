@@ -89,7 +89,7 @@ fn do_lambda_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, Sche
 fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
     validate_num_args(&Vec::from(args), 2, 0)?;
     let mut args_iter = args.iter();
-    let mut closure = Rc::new(RefCell::new(create_closure(env.clone())));
+    let mut closure = create_closure(env.clone());
 
     match args_iter.next().unwrap() {
         Exp::SubExp(pairs) => {

@@ -33,9 +33,9 @@ impl Env {
     }
 }
 
-pub(crate) fn create_closure<'a>(parent: Rc<RefCell<Env>>) -> Env {
-    Env {
+pub(crate) fn create_closure<'a>(parent: Rc<RefCell<Env>>) -> Rc<RefCell<Env>> {
+    Rc::new(RefCell::new(Env {
         table: HashMap::new(),
         parent: Some(parent),
-    }
+    }))
 }
