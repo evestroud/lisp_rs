@@ -32,28 +32,29 @@ pub(crate) fn evaluate(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Atom, 
     }
 }
 
-fn apply(list: &Vec<Exp>, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
-    let mut list_iter = list.iter();
-    let first = evaluate(
-        list_iter.next().unwrap_or_else(|| &Exp::Literal(Atom::Nil)),
-        env,
-    )?;
+fn apply(args: &Vec<Exp>, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+    if args.len() == 0 {
+        return Ok(Atom::Nil);
+    }
+    let first = evaluate(&args[0], env)?;
+    let rest = &args[1..];
     match first {
         Atom::Builtin(f) => {
-            let rest = list_iter
+            let rest = rest
+                .iter()
                 .map(|exp| evaluate(exp, env))
                 .collect::<Result<Vec<Atom>, SchemeError>>()?;
             (f.func)(rest, env)
         }
         Atom::Lambda(mut lambda) => lambda.eval(
-            list_iter
+            rest.iter()
                 .map(|exp| evaluate(exp, env))
                 .collect::<Result<Vec<Atom>, SchemeError>>()?,
         ),
         Atom::SpecialForm(form) => match form {
-            SpecialForm::Define => do_define_form(&list[1..], env),
-            SpecialForm::Let => do_let_form(&list[1..], env),
-            SpecialForm::Lambda => do_lambda_form(&list[1..], env),
+            SpecialForm::Define => do_define_form(rest, env),
+            SpecialForm::Let => do_let_form(rest, env),
+            SpecialForm::Lambda => do_lambda_form(rest, env),
         },
         Atom::Nil => return Ok(Atom::Nil),
         _ => Err(SchemeError(format!("Expected a symbol, found {:?}", first))),
@@ -62,37 +63,32 @@ fn apply(list: &Vec<Exp>, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeErro
 
 fn do_lambda_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
     validate_num_args(args, 2, 0)?;
-    let mut args_iter = args.iter();
-    let params = match args_iter.next() {
-        Some(param_args) => match param_args {
-            Exp::SubExp(param_list) => param_list
-                .iter()
-                .map(|arg| {
-                    let atom = evaluate(&as_quote(arg), env)?;
-                    match atom {
-                        Atom::Symbol(name) => Ok(name.to_string()),
-                        _ => Err(SchemeError(format!(
-                            "Parameter list expects symbols, found {}",
-                            atom
-                        ))),
-                    }
-                })
-                .collect::<Result<Vec<String>, SchemeError>>()?,
-            Exp::Literal(_) => todo!(),
-        },
-        None => todo!(),
+    let params = match &args[0] {
+        Exp::SubExp(param_list) => param_list
+            .iter()
+            .map(|arg| {
+                let atom = evaluate(&as_quote(arg), env)?;
+                match atom {
+                    Atom::Symbol(name) => Ok(name.to_string()),
+                    _ => Err(SchemeError(format!(
+                        "Parameter list expects symbols, found {}",
+                        atom
+                    ))),
+                }
+            })
+            .collect::<Result<Vec<String>, SchemeError>>()?,
+        Exp::Literal(_) => todo!(),
     };
-    let body = args_iter.next().unwrap().clone();
+    let body = args[1].clone();
     let env = create_closure(env.clone());
     Ok(Atom::Lambda(Box::new(Lambda { params, body, env })))
 }
 
 fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
     validate_num_args(args, 2, 0)?;
-    let mut args_iter = args.iter();
     let mut closure = create_closure(env.clone());
 
-    match args_iter.next().unwrap() {
+    match &args[0] {
         Exp::SubExp(pairs) => {
             for pair in pairs {
                 if let Exp::SubExp(pair_vec) = pair {
@@ -103,16 +99,18 @@ fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeE
         Exp::Literal(_) => return Err(SchemeError("Expected a list".to_string())),
     }
     eval_all(
-        &args_iter.map(|arg| arg.clone()).collect::<Vec<Exp>>(),
+        &args[1..]
+            .iter()
+            .map(|arg| arg.clone())
+            .collect::<Vec<Exp>>(),
         &mut closure,
     )
 }
 
 fn do_define_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
     validate_num_args(args, 2, 2)?;
-    let mut args_iter = args.iter();
-    let second = evaluate(&as_quote(args_iter.next().unwrap()), env)?;
-    let third = evaluate(args_iter.next().unwrap(), env)?;
+    let second = evaluate(&as_quote(&args[0]), env)?;
+    let third = evaluate(&args[1], env)?;
     if let Atom::Symbol(symbol) = second {
         env.borrow_mut().set(&symbol, &third);
     } else {
