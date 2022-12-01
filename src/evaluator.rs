@@ -63,7 +63,7 @@ fn apply(list: &Vec<Exp>, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeErro
 }
 
 fn do_lambda_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
-    validate_num_args(&Vec::from(args), 2, 0)?;
+    validate_num_args(args, 2, 0)?;
     let mut args_iter = args.iter();
     let params = match args_iter.next() {
         Some(param_args) => match param_args {
@@ -90,7 +90,7 @@ fn do_lambda_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, Sche
 }
 
 fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
-    validate_num_args(&Vec::from(args), 2, 0)?;
+    validate_num_args(args, 2, 0)?;
     let mut args_iter = args.iter();
     let mut closure = create_closure(env.clone());
 
@@ -111,7 +111,7 @@ fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeE
 }
 
 fn do_define_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
-    validate_num_args(&Vec::from(args), 2, 2)?;
+    validate_num_args(args, 2, 2)?;
     let mut args_iter = args.iter();
     let second = evaluate(&as_quote(args_iter.next().unwrap()), env)?;
     let third = evaluate(args_iter.next().unwrap(), env)?;

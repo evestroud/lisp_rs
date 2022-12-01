@@ -9,11 +9,7 @@ impl fmt::Display for SchemeError {
     }
 }
 
-pub(crate) fn validate_num_args<T>(
-    args: &Vec<T>,
-    min: usize,
-    max: usize,
-) -> Result<(), SchemeError> {
+pub(crate) fn validate_num_args<T>(args: &[T], min: usize, max: usize) -> Result<(), SchemeError> {
     match args.len() >= min {
         true => Ok(()),
         false => Err(SchemeError(format!(
