@@ -40,11 +40,9 @@ fn apply(list: &Vec<Exp>, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeErro
     )?;
     match first {
         Atom::Builtin(f) => {
-            let rest_results = list_iter.map(|exp| evaluate(exp, env));
-            let mut rest = Vec::<Atom>::new();
-            for res in rest_results {
-                rest.push(res?);
-            }
+            let rest = list_iter
+                .map(|exp| evaluate(exp, env))
+                .collect::<Result<Vec<Atom>, SchemeError>>()?;
             (f.func)(rest, env)
         }
         Atom::Lambda(mut lambda) => lambda.eval(
