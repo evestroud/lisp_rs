@@ -109,14 +109,34 @@ fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeE
 
 fn do_define_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
     validate_num_args(args, 2, 2)?;
-    let second = evaluate(&as_quote(&args[0]), env)?;
-    let third = evaluate(&args[1], env)?;
-    if let Atom::Symbol(symbol) = second {
-        env.borrow_mut().set(&symbol, &third);
-    } else {
-        return Err(SchemeError(format!("Expected a symbol, found {}", second)));
+    let second = &args[0];
+    match second {
+        Exp::SubExp(signature) => {
+            if let Atom::Symbol(name) = evaluate(&as_quote(&signature[0]), env)? {
+                let params = Exp::SubExp(signature[1..].to_vec());
+                let lambda_form_args = [[params], [args[1].clone()]].concat();
+                let lambda = do_lambda_form(lambda_form_args.as_slice(), env)?;
+                env.borrow_mut().set(&name, &lambda);
+                return Ok(Atom::Nil);
+            } else {
+                return Err(SchemeError(format!(
+                    "Expected a symbol as the name, found {}",
+                    signature[0]
+                )));
+            }
+        }
+        Exp::Literal(val) => {
+            if let Atom::Symbol(symbol) = val {
+                let third = evaluate(&args[1], env)?;
+                env.borrow_mut().set(&symbol, &third);
+                return Ok(Atom::Nil);
+            }
+        }
     }
-    Ok(Atom::Nil)
+    Err(SchemeError(format!(
+        "Expected a symbol as the name, found {}",
+        second
+    )))
 }
 
 fn as_quote(exp: &Exp) -> Exp {
