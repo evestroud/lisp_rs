@@ -47,6 +47,11 @@ fn apply(list: &Vec<Exp>, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeErro
             }
             (f.func)(rest, env)
         }
+        Atom::Lambda(mut lambda) => lambda.eval(
+            list_iter
+                .map(|exp| evaluate(exp, env))
+                .collect::<Result<Vec<Atom>, SchemeError>>()?,
+        ),
         Atom::SpecialForm(form) => match form {
             SpecialForm::Define => do_define_form(&list[1..], env),
             SpecialForm::Let => do_let_form(&list[1..], env),
