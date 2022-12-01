@@ -22,6 +22,7 @@ pub(crate) enum Atom {
     SpecialForm(SpecialForm),
     Quote(Box<Exp>),
     Lambda(Box<Lambda>),
+    Boolean(bool),
 }
 
 impl Display for Atom {
@@ -34,6 +35,7 @@ impl Display for Atom {
             Atom::SpecialForm(f) => f.to_string(),
             Atom::Quote(exp) => format!("'{}", exp),
             Atom::Lambda(l) => l.to_string(),
+            Atom::Boolean(b) => b.to_string(),
         };
         write!(f, "{}", val)
     }

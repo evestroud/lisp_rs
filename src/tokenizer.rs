@@ -13,6 +13,7 @@ pub(crate) enum Token {
 pub(crate) enum Literal {
     Number(Rational),
     Symbol(String),
+    Boolean(bool),
 }
 
 pub(crate) fn tokenize(input: &str) -> Result<VecDeque<Token>, SchemeError> {
@@ -33,6 +34,10 @@ pub(crate) fn tokenize(input: &str) -> Result<VecDeque<Token>, SchemeError> {
                                 .parse::<f32>()
                                 .map_err(|_| SchemeError("Invalid number literal".to_string()))?,
                         ))))
+                    } else if ["true", "#t"].contains(&token.to_ascii_lowercase().as_str()) {
+                        Ok(Token::Literal(Literal::Boolean(true)))
+                    } else if ["false", "#f"].contains(&token.to_ascii_lowercase().as_str()) {
+                        Ok(Token::Literal(Literal::Boolean(false)))
                     } else {
                         Ok(Token::Literal(Literal::Symbol(token.to_string())))
                     }

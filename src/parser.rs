@@ -68,6 +68,7 @@ pub(crate) fn parse(tokens: &mut VecDeque<Token>) -> Result<Exp, SchemeError> {
                     _ => Atom::Symbol(symbol.to_string()),
                 }))
             }
+            Literal::Boolean(b) => Ok(Exp::Literal(Atom::Boolean(*b))),
         },
     }
 }
