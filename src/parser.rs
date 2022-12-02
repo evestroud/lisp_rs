@@ -57,6 +57,7 @@ pub(crate) fn parse(tokens: &mut VecDeque<Token>) -> Result<Exp, SchemeError> {
             return Ok(Exp::SubExp(exp));
         }
         Token::EndExp => Err(SchemeError("Unmatched ')'".to_string())),
+        Token::Quote => Ok(Exp::Literal(Atom::Quote(Box::from(parse(tokens)?)))),
         Token::Literal(atom) => match atom {
             Literal::Number(num) => Ok(Exp::Literal(Atom::Number(num.clone()))),
             Literal::Symbol(symbol) => {

@@ -6,6 +6,7 @@ use crate::{atom::rational::Rational, lib::SchemeError};
 pub(crate) enum Token {
     StartExp,
     EndExp,
+    Quote,
     Literal(Literal),
 }
 
@@ -20,10 +21,12 @@ pub(crate) fn tokenize(input: &str) -> Result<VecDeque<Token>, SchemeError> {
     input
         .replace("(", " ( ")
         .replace(")", " ) ")
+        .replace("'", " ' ")
         .split_ascii_whitespace()
         .map(|token| match token {
             "(" => Ok(Token::StartExp),
             ")" => Ok(Token::EndExp),
+            "'" => Ok(Token::Quote),
             _ => {
                 if let Some(c) = token.chars().next() {
                     if c.is_ascii_digit()
