@@ -73,12 +73,63 @@ pub(crate) fn builtins_map() -> HashMap<String, Atom> {
                 name: "eq?".to_string(),
             })),
         ),
+        (
+            "number?".to_string(),
+            Atom::Builtin(Rc::from(Builtin {
+                func: &number,
+                name: "number?".to_string(),
+            })),
+        ),
+        (
+            "symbol?".to_string(),
+            Atom::Builtin(Rc::from(Builtin {
+                func: &symbol,
+                name: "symbol?".to_string(),
+            })),
+        ),
+        (
+            "nil?".to_string(),
+            Atom::Builtin(Rc::from(Builtin {
+                func: &nil,
+                name: "nil?".to_string(),
+            })),
+        ),
+        (
+            "builtin?".to_string(),
+            Atom::Builtin(Rc::from(Builtin {
+                func: &builtin,
+                name: "builtin?".to_string(),
+            })),
+        ),
+        (
+            "special_form?".to_string(),
+            Atom::Builtin(Rc::from(Builtin {
+                func: &special_form,
+                name: "special_form?".to_string(),
+            })),
+        ),
+        (
+            "quote?".to_string(),
+            Atom::Builtin(Rc::from(Builtin {
+                func: &quote,
+                name: "quote?".to_string(),
+            })),
+        ),
+        (
+            "lambda?".to_string(),
+            Atom::Builtin(Rc::from(Builtin {
+                func: &lambda,
+                name: "lambda?".to_string(),
+            })),
+        ),
+        (
+            "boolean?".to_string(),
+            Atom::Builtin(Rc::from(Builtin {
+                func: &boolean,
+                name: "boolean?".to_string(),
+            })),
+        ),
     ])
-}
-
-pub(crate) fn eq(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
-    validate_num_args(&args, 2, 2)?;
-    Ok(Atom::Boolean(args[0] == args[1]))
 }
 
 pub(crate) fn add(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
@@ -139,4 +190,53 @@ pub(crate) fn div(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, Sch
             num, den
         ))),
     }
+}
+
+pub(crate) fn eq(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+    validate_num_args(&args, 2, 2)?;
+    Ok(Atom::Boolean(args[0] == args[1]))
+}
+
+/*
+ *    Type Checking
+ */
+
+pub(crate) fn number(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+    validate_num_args(&args, 1, 1)?;
+    Ok(Atom::Boolean(args[0].is_number()))
+}
+
+pub(crate) fn symbol(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+    validate_num_args(&args, 1, 1)?;
+    Ok(Atom::Boolean(args[0].is_symbol()))
+}
+
+pub(crate) fn nil(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+    validate_num_args(&args, 1, 1)?;
+    Ok(Atom::Boolean(args[0].is_nil()))
+}
+
+pub(crate) fn builtin(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+    validate_num_args(&args, 1, 1)?;
+    Ok(Atom::Boolean(args[0].is_builtin()))
+}
+
+pub(crate) fn special_form(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+    validate_num_args(&args, 1, 1)?;
+    Ok(Atom::Boolean(args[0].is_special_form()))
+}
+
+pub(crate) fn quote(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+    validate_num_args(&args, 1, 1)?;
+    Ok(Atom::Boolean(args[0].is_quote()))
+}
+
+pub(crate) fn lambda(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+    validate_num_args(&args, 1, 1)?;
+    Ok(Atom::Boolean(args[0].is_lambda()))
+}
+
+pub(crate) fn boolean(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+    validate_num_args(&args, 1, 1)?;
+    Ok(Atom::Boolean(args[0].is_boolean()))
 }
