@@ -74,6 +74,34 @@ pub(crate) fn builtins_map() -> HashMap<String, Atom> {
             })),
         ),
         (
+            ">".to_string(),
+            Atom::Builtin(Rc::from(Builtin {
+                func: &gt,
+                name: ">".to_string(),
+            })),
+        ),
+        (
+            "<".to_string(),
+            Atom::Builtin(Rc::from(Builtin {
+                func: &lt,
+                name: "<".to_string(),
+            })),
+        ),
+        (
+            ">=".to_string(),
+            Atom::Builtin(Rc::from(Builtin {
+                func: &gte,
+                name: ">=".to_string(),
+            })),
+        ),
+        (
+            "<=".to_string(),
+            Atom::Builtin(Rc::from(Builtin {
+                func: &lte,
+                name: "<=".to_string(),
+            })),
+        ),
+        (
             "number?".to_string(),
             Atom::Builtin(Rc::from(Builtin {
                 func: &number,
@@ -195,6 +223,42 @@ pub(crate) fn div(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, Sch
 pub(crate) fn eq(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
     validate_num_args(&args, 2, 2)?;
     Ok(Atom::Boolean(args[0] == args[1]))
+}
+
+pub(crate) fn gt(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+    validate_num_args(&args, 2, 2)?;
+    if let (Atom::Number(x), Atom::Number(y)) = (args[0].clone(), args[1].clone()) {
+        Ok(Atom::Boolean(x.eval() > y.eval()))
+    } else {
+        Err(SchemeError("> can only compare numbers".to_string()))
+    }
+}
+
+pub(crate) fn lt(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+    validate_num_args(&args, 2, 2)?;
+    if let (Atom::Number(x), Atom::Number(y)) = (args[0].clone(), args[1].clone()) {
+        Ok(Atom::Boolean(x.eval() < y.eval()))
+    } else {
+        Err(SchemeError("> can only compare numbers".to_string()))
+    }
+}
+
+pub(crate) fn gte(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+    validate_num_args(&args, 2, 2)?;
+    if let (Atom::Number(x), Atom::Number(y)) = (args[0].clone(), args[1].clone()) {
+        Ok(Atom::Boolean(x.eval() >= y.eval()))
+    } else {
+        Err(SchemeError("> can only compare numbers".to_string()))
+    }
+}
+
+pub(crate) fn lte(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+    validate_num_args(&args, 2, 2)?;
+    if let (Atom::Number(x), Atom::Number(y)) = (args[0].clone(), args[1].clone()) {
+        Ok(Atom::Boolean(x.eval() <= y.eval()))
+    } else {
+        Err(SchemeError("> can only compare numbers".to_string()))
+    }
 }
 
 /*
