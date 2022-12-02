@@ -66,6 +66,8 @@ pub(crate) fn parse(tokens: &mut VecDeque<Token>) -> Result<Exp, SchemeError> {
                     "define" => Atom::SpecialForm(SpecialForm::Define),
                     "lambda" => Atom::SpecialForm(SpecialForm::Lambda),
                     "if" => Atom::SpecialForm(SpecialForm::If),
+                    "and" => Atom::SpecialForm(SpecialForm::And),
+                    "or" => Atom::SpecialForm(SpecialForm::Or),
                     _ => Atom::Symbol(symbol.to_string()),
                 }))
             }

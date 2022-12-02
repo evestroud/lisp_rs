@@ -56,10 +56,34 @@ fn apply(args: &Vec<Exp>, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeErro
             SpecialForm::Let => do_let_form(rest, env),
             SpecialForm::Lambda => do_lambda_form(rest, env),
             SpecialForm::If => do_if_form(rest, env),
+            SpecialForm::And => do_and_form(rest, env),
+            SpecialForm::Or => do_or_form(rest, env),
         },
         Atom::Nil => return Ok(Atom::Nil),
         _ => Err(SchemeError(format!("Expected a symbol, found {:?}", first))),
     }
+}
+
+fn do_and_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+    let mut val = Atom::Boolean(true);
+    for a in args {
+        val = evaluate(a, env)?;
+        if val == Atom::Boolean(false) {
+            break;
+        }
+    }
+    Ok(val)
+}
+
+fn do_or_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+    let mut val = Atom::Boolean(false);
+    for a in args {
+        val = evaluate(a, env)?;
+        if val != Atom::Boolean(false) {
+            break;
+        }
+    }
+    Ok(val)
 }
 
 fn do_if_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
