@@ -1,7 +1,7 @@
 use crate::{
     builtin::Builtin,
     environment::Env,
-    evaluator::evaluate,
+    evaluator::eval_all,
     lib::{validate_num_args, SchemeError},
     parser::Exp,
 };
@@ -127,7 +127,7 @@ impl Display for SpecialForm {
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct Lambda {
     pub(crate) params: Vec<String>,
-    pub(crate) body: Exp,
+    pub(crate) body: Vec<Exp>,
     pub(crate) env: Rc<RefCell<Env>>,
 }
 
@@ -138,13 +138,21 @@ impl Lambda {
             self.env.borrow_mut().set(name, &val);
         }
 
-        evaluate(&self.body, &mut self.env)
+        eval_all(&self.body, &mut self.env)
     }
 }
 
 impl Display for Lambda {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let string = format!("(lambda ({}) {})", self.params.join(" "), self.body);
+        let string = format!(
+            "(lambda ({}) {})",
+            self.params.join(" "),
+            self.body
+                .iter()
+                .map(|exp| exp.to_string())
+                .reduce(|p, c| p + " " + &c)
+                .unwrap_or("".to_string())
+        );
         write!(f, "{}", string)
     }
 }

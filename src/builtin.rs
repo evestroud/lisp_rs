@@ -1,5 +1,5 @@
 use crate::atom::rational::Rational;
-use crate::atom::{self, Atom};
+use crate::atom::Atom;
 use crate::environment::Env;
 use crate::lib::validate_num_args;
 use crate::lib::SchemeError;

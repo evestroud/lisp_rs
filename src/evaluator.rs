@@ -118,7 +118,7 @@ fn do_lambda_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, Sche
             .collect::<Result<Vec<String>, SchemeError>>()?,
         Exp::Literal(_) => todo!(),
     };
-    let body = args[1].clone();
+    let body = args[1..].to_vec();
     let env = create_closure(env.clone());
     Ok(Atom::Lambda(Box::new(Lambda { params, body, env })))
 }
@@ -153,7 +153,7 @@ fn do_define_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, Sche
         Exp::SubExp(signature) => {
             if let Atom::Symbol(name) = evaluate(&as_quote(&signature[0]), env)? {
                 let params = Exp::SubExp(signature[1..].to_vec());
-                let lambda_form_args = [[params], [args[1].clone()]].concat();
+                let lambda_form_args = vec![&[params][..], &args[1..]].concat();
                 let lambda = do_lambda_form(lambda_form_args.as_slice(), env)?;
                 env.borrow_mut().set(&name, &lambda);
                 return Ok(Atom::Nil);
