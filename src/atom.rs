@@ -101,6 +101,8 @@ pub(crate) enum SpecialForm {
     If,
     And,
     Or,
+    Eval,
+    Apply,
 }
 
 impl Display for SpecialForm {
@@ -115,6 +117,8 @@ impl Display for SpecialForm {
                 SpecialForm::If => "if".to_string(),
                 SpecialForm::And => "and".to_string(),
                 SpecialForm::Or => "or".to_string(),
+                SpecialForm::Eval => "eval".to_string(),
+                SpecialForm::Apply => "apply".to_string(),
             }
         )
     }

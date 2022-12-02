@@ -58,9 +58,14 @@ fn apply(args: &Vec<Exp>, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeErro
             SpecialForm::If => do_if_form(rest, env),
             SpecialForm::And => do_and_form(rest, env),
             SpecialForm::Or => do_or_form(rest, env),
+            SpecialForm::Eval => eval_all(&rest.to_vec(), env),
+            SpecialForm::Apply => apply(&rest.to_vec(), env),
         },
         Atom::Nil => return Ok(Atom::Nil),
-        _ => Err(SchemeError(format!("Expected a symbol, found {:?}", first))),
+        _ => Err(SchemeError(format!(
+            "Expected a function, found {:?}",
+            first
+        ))),
     }
 }
 
