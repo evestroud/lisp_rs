@@ -7,7 +7,7 @@ use crate::{
     parser::Exp,
 };
 
-pub(crate) fn eval_all(input: &Vec<Exp>, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+pub(crate) fn eval_all(input: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
     let mut result = Atom::Nil;
     for exp in input {
         result = evaluate(exp, env)?;
