@@ -17,7 +17,14 @@ pub(crate) fn eval_all(input: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom
 
 pub(crate) fn evaluate(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
     match input {
-        Exp::SubExp(list) => apply(list, env),
+        Exp::SubExp(list) => {
+            let operator = evaluate(&list[0], env)?;
+            let args = list[1..]
+                .iter()
+                .map(|exp| exp.clone())
+                .collect::<Vec<Exp>>();
+            apply(operator, &args, env)
+        }
         Exp::Literal(atom) => match atom {
             Atom::Symbol(symbol) => env.borrow().get(&symbol).map(|val| val.clone()),
             Atom::Quote(exp) => {
@@ -32,7 +39,7 @@ pub(crate) fn evaluate(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Atom, 
     }
 }
 
-fn apply(args: &Vec<Exp>, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+fn apply(operator: Atom, args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
     if args.len() == 0 {
         return Err(SchemeError("Expected an expression".to_string()));
     }
@@ -59,7 +66,7 @@ fn apply(args: &Vec<Exp>, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeErro
             SpecialForm::And => do_and_form(rest, env),
             SpecialForm::Or => do_or_form(rest, env),
             SpecialForm::Eval => eval_all(&rest.to_vec(), env),
-            SpecialForm::Apply => apply(&rest.to_vec(), env),
+            SpecialForm::Apply => apply(evaluate(&rest[0], env)?, &rest.to_vec(), env),
         },
         Atom::Nil => return Ok(Atom::Nil),
         _ => Err(SchemeError(format!(
