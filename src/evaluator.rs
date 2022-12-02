@@ -55,10 +55,20 @@ fn apply(args: &Vec<Exp>, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeErro
             SpecialForm::Define => do_define_form(rest, env),
             SpecialForm::Let => do_let_form(rest, env),
             SpecialForm::Lambda => do_lambda_form(rest, env),
+            SpecialForm::If => do_if_form(rest, env),
         },
         Atom::Nil => return Ok(Atom::Nil),
         _ => Err(SchemeError(format!("Expected a symbol, found {:?}", first))),
     }
+}
+
+fn do_if_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+    validate_num_args(args, 3, 3)?;
+    let condition = evaluate(&args[0], env)?;
+    if let Atom::Boolean(false) = condition {
+        return evaluate(&args[2], env);
+    }
+    evaluate(&args[1], env)
 }
 
 fn do_lambda_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {

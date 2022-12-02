@@ -46,6 +46,7 @@ pub(crate) enum SpecialForm {
     Define,
     Let,
     Lambda,
+    If,
 }
 
 impl Display for SpecialForm {
@@ -57,6 +58,7 @@ impl Display for SpecialForm {
                 SpecialForm::Define => "define".to_string(),
                 SpecialForm::Let => "let".to_string(),
                 SpecialForm::Lambda => "lambda".to_string(),
+                SpecialForm::If => "if".to_string(),
             }
         )
     }
