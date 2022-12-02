@@ -1,4 +1,5 @@
-use crate::atom::{rational::Rational, Atom};
+use crate::atom::rational::Rational;
+use crate::atom::{self, Atom};
 use crate::environment::Env;
 use crate::lib::validate_num_args;
 use crate::lib::SchemeError;
@@ -30,8 +31,8 @@ impl PartialEq for Builtin {
         !self.eq(other)
     }
 
-    fn eq(&self, _: &Self) -> bool {
-        todo!()
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
     }
 }
 
@@ -65,7 +66,19 @@ pub(crate) fn builtins_map() -> HashMap<String, Atom> {
                 name: "/".to_string(),
             })),
         ),
+        (
+            "eq?".to_string(),
+            Atom::Builtin(Rc::from(Builtin {
+                func: &eq,
+                name: "eq?".to_string(),
+            })),
+        ),
     ])
+}
+
+pub(crate) fn eq(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+    validate_num_args(&args, 2, 2)?;
+    Ok(Atom::Boolean(args[0] == args[1]))
 }
 
 pub(crate) fn add(args: Vec<Atom>, _: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
