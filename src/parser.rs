@@ -76,5 +76,6 @@ pub(crate) fn parse(tokens: &mut VecDeque<Token>) -> Result<Exp, SchemeError> {
             }
             Literal::Boolean(b) => Ok(Exp::Literal(Atom::Boolean(*b))),
         },
+        Token::StringDelim => Err(SchemeError("Strings not implemented yet".to_string())),
     }
 }
