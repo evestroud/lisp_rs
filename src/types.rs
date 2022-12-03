@@ -2,8 +2,9 @@ use self::{function::Function, rational::Rational};
 use crate::lib::SchemeError;
 use std::fmt::{self, Display};
 
-pub mod function;
-pub mod rational;
+pub(crate) mod default_env;
+pub(crate) mod function;
+pub(crate) mod rational;
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum Exp {
@@ -16,6 +17,13 @@ impl Exp {
         match self {
             Exp::List(_) => Err(SchemeError(format!("Expected an atom, found {}", self))),
             Exp::Atom(atom) => Ok(atom.clone()),
+        }
+    }
+
+    pub(crate) fn unwrap_list(&self) -> Result<Vec<Exp>, SchemeError> {
+        match self {
+            Exp::List(list) => Ok(list.clone()),
+            Exp::Atom(_) => Err(SchemeError(format!("Expected a list, found {}", self))),
         }
     }
 }

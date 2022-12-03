@@ -1,4 +1,4 @@
-use crate::lib::SchemeError;
+use crate::{lib::SchemeError, types::default_env::builtins_map};
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use crate::types::Exp;
@@ -12,7 +12,7 @@ pub(crate) struct Env {
 impl Env {
     pub(crate) fn new() -> Self {
         Self {
-            table: todo!(),
+            table: builtins_map(),
             parent: None,
         }
     }
