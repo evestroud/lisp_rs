@@ -1,10 +1,9 @@
-use crate::atom::SchemeExp;
-use crate::atom::{Atom, SpecialForm};
 use crate::lib::SchemeError;
-use crate::tokenizer::{Literal, Token};
+use crate::tokenizer::Token;
+use crate::types::{Exp, Value};
 use std::collections::VecDeque;
 
-pub(crate) fn parse_all(tokens: &mut VecDeque<Token>) -> Result<Vec<SchemeExp>, SchemeError> {
+pub(crate) fn parse_all(tokens: &mut VecDeque<Token>) -> Result<Vec<Exp>, SchemeError> {
     let mut result = Vec::new();
     while tokens.len() != 0 {
         result.push(parse(tokens)?);
@@ -12,7 +11,7 @@ pub(crate) fn parse_all(tokens: &mut VecDeque<Token>) -> Result<Vec<SchemeExp>, 
     Ok(result)
 }
 
-pub(crate) fn parse(tokens: &mut VecDeque<Token>) -> Result<SchemeExp, SchemeError> {
+pub(crate) fn parse(tokens: &mut VecDeque<Token>) -> Result<Exp, SchemeError> {
     if tokens.len() == 0 {
         return Err(SchemeError("Unexpected EOF while parsing".to_string()));
     }
@@ -28,28 +27,10 @@ pub(crate) fn parse(tokens: &mut VecDeque<Token>) -> Result<SchemeExp, SchemeErr
                 exp.push(parse(tokens)?);
             }
             tokens.pop_front();
-            return Ok(SchemeExp::List(exp));
+            return Ok(Exp::List(exp));
         }
         Token::EndExp => Err(SchemeError("Unmatched ')'".to_string())),
-        Token::Quote => Ok(SchemeExp::Atom(Atom::Quote(Box::from(parse(tokens)?)))),
-        Token::Literal(atom) => match atom {
-            Literal::Number(num) => Ok(SchemeExp::Atom(Atom::Number(num.clone()))),
-            Literal::Symbol(symbol) => Ok(SchemeExp::Atom(
-                match symbol.to_ascii_lowercase().as_str() {
-                    "nil" => Atom::Nil,
-                    "let" => Atom::SpecialForm(SpecialForm::Let),
-                    "define" => Atom::SpecialForm(SpecialForm::Define),
-                    "lambda" => Atom::SpecialForm(SpecialForm::Lambda),
-                    "if" => Atom::SpecialForm(SpecialForm::If),
-                    "and" => Atom::SpecialForm(SpecialForm::And),
-                    "or" => Atom::SpecialForm(SpecialForm::Or),
-                    "eval" => Atom::SpecialForm(SpecialForm::Eval),
-                    "apply" => Atom::SpecialForm(SpecialForm::Apply),
-                    _ => Atom::Symbol(symbol.to_string()),
-                },
-            )),
-            Literal::Boolean(b) => Ok(SchemeExp::Atom(Atom::Boolean(*b))),
-        },
-        Token::StringDelim => Err(SchemeError("Strings not implemented yet".to_string())),
+        Token::Quote => Ok(Exp::Atom(Value::Quote(Box::from(parse(tokens)?)))),
+        Token::Literal(value) => Ok(Exp::Atom(value.clone())),
     }
 }

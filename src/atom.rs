@@ -12,43 +12,6 @@ use std::{
 
 pub mod rational;
 
-#[derive(Debug, Clone, PartialEq)]
-pub(crate) enum SchemeExp {
-    List(Vec<SchemeExp>),
-    Atom(Atom),
-}
-
-impl Display for SchemeExp {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let this = match self {
-            SchemeExp::List(exp) => {
-                // recursively parse subexpressions
-                format!(
-                    "({})",
-                    exp.iter()
-                        .map(|e| e.to_string())
-                        .collect::<Vec<String>>()
-                        .join(" ")
-                )
-            }
-            SchemeExp::Atom(atom) => atom.to_string(),
-        };
-        write!(f, "{}", this)
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub(crate) enum Atom {
-    Number(rational::Rational),
-    Symbol(String),
-    Nil,
-    Builtin(Rc<Builtin>),
-    SpecialForm(SpecialForm),
-    Quote(Box<SchemeExp>),
-    Lambda(Box<Lambda>),
-    Boolean(bool),
-}
-
 impl Atom {
     pub(crate) fn is_number(&self) -> bool {
         match self {
@@ -114,37 +77,6 @@ impl Display for Atom {
             Atom::Boolean(b) => b.to_string(),
         };
         write!(f, "{}", val)
-    }
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub(crate) enum SpecialForm {
-    Define,
-    Let,
-    Lambda,
-    If,
-    And,
-    Or,
-    Eval,
-    Apply,
-}
-
-impl Display for SpecialForm {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                SpecialForm::Define => "define".to_string(),
-                SpecialForm::Let => "let".to_string(),
-                SpecialForm::Lambda => "lambda".to_string(),
-                SpecialForm::If => "if".to_string(),
-                SpecialForm::And => "and".to_string(),
-                SpecialForm::Or => "or".to_string(),
-                SpecialForm::Eval => "eval".to_string(),
-                SpecialForm::Apply => "apply".to_string(),
-            }
-        )
     }
 }
 
