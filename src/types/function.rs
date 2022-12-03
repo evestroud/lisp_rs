@@ -12,9 +12,23 @@ pub(crate) enum Function {
     // Lambda: Lambda
 }
 
+impl Function {
+    pub(crate) fn call(&self, args: &Exp, mut env: Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+        match self {
+            Function::Builtin(f) => (f.func)(args.clone(), &mut env),
+        }
+    }
+}
+
 impl Display for Function {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        write!(
+            f,
+            "{}",
+            match self {
+                Function::Builtin(f) => f.name.clone(),
+            }
+        )
     }
 }
 

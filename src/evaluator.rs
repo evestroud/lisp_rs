@@ -1,3 +1,4 @@
+use crate::lib::validate_num_args;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -15,7 +16,11 @@ pub(crate) fn eval_all(input: &[Exp], env: Rc<RefCell<Env>>) -> Result<Exp, Sche
 
 pub(crate) fn evaluate(input: &Exp, env: Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     match input {
-        Exp::List(_) => todo!(),
+        Exp::List(list) => {
+            validate_num_args(&list, 1, 0)?;
+            let operator = evaluate(list.get(0).unwrap(), env.clone())?;
+            apply(&operator, &Exp::List(list[1..].to_vec()), env.clone())
+        }
         Exp::Atom(atom) => match atom {
             Value::Symbol(symbol) => Ok(env.borrow().get(symbol)?),
             Value::Quote(quoted) => Ok(*quoted.clone()),
@@ -35,13 +40,13 @@ pub(crate) fn eval_args(input: &[Exp], env: Rc<RefCell<Env>>) -> Result<Exp, Sch
 pub(crate) fn apply(operator: &Exp, args: &Exp, env: Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     if let Value::Function(function) = operator.unwrap_atom()? {
         // todo: Builtin and Lambda, Function.call method
+        function.call(args, env)
     } else {
-        return Err(SchemeError(format!(
+        Err(SchemeError(format!(
             "Expected a function, found {}",
             operator
-        )));
+        )))
     }
-    Ok(Exp::List(Vec::new()))
 }
 // pub(crate) fn evaluate(input: &SchemeExp, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
 //     match input {

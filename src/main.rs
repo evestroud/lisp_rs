@@ -11,6 +11,8 @@ use rustyline::error::ReadlineError;
 use rustyline::{Editor, Result};
 use tokenizer::tokenize;
 
+use crate::evaluator::eval_all;
+
 // mod atom;
 // mod builtin;
 mod environment;
@@ -39,6 +41,12 @@ fn main() -> Result<()> {
                         match parse_all(&mut tokens) {
                             Ok(exp) => {
                                 println!("{:?}", exp);
+                                match eval_all(&exp, env.clone()) {
+                                    Ok(result) => {
+                                        println!("{}", result);
+                                    }
+                                    Err(e) => println!("Evaluation Error: {}", e),
+                                }
                             }
                             Err(e) => println!("Parse Error: {}", e),
                             //     Ok(expression) => match eval_all(&expression, &mut env) {
