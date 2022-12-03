@@ -1,36 +1,10 @@
-use std::fmt::Display;
-use std::{collections::VecDeque, fmt};
-
+use crate::atom::SchemeExp;
 use crate::atom::{Atom, SpecialForm};
 use crate::lib::SchemeError;
 use crate::tokenizer::{Literal, Token};
+use std::collections::VecDeque;
 
-#[derive(Debug, Clone, PartialEq)]
-pub(crate) enum Exp {
-    SubExp(Vec<Exp>),
-    Literal(Atom),
-}
-
-impl Display for Exp {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let this = match self {
-            Exp::SubExp(exp) => {
-                // recursively parse subexpressions
-                format!(
-                    "({})",
-                    exp.iter()
-                        .map(|e| e.to_string())
-                        .collect::<Vec<String>>()
-                        .join(" ")
-                )
-            }
-            Exp::Literal(atom) => atom.to_string(),
-        };
-        write!(f, "{}", this)
-    }
-}
-
-pub(crate) fn parse_all(tokens: &mut VecDeque<Token>) -> Result<Vec<Exp>, SchemeError> {
+pub(crate) fn parse_all(tokens: &mut VecDeque<Token>) -> Result<Vec<SchemeExp>, SchemeError> {
     let mut result = Vec::new();
     while tokens.len() != 0 {
         result.push(parse(tokens)?);
@@ -38,7 +12,7 @@ pub(crate) fn parse_all(tokens: &mut VecDeque<Token>) -> Result<Vec<Exp>, Scheme
     Ok(result)
 }
 
-pub(crate) fn parse(tokens: &mut VecDeque<Token>) -> Result<Exp, SchemeError> {
+pub(crate) fn parse(tokens: &mut VecDeque<Token>) -> Result<SchemeExp, SchemeError> {
     if tokens.len() == 0 {
         return Err(SchemeError("Unexpected EOF while parsing".to_string()));
     }
@@ -54,14 +28,14 @@ pub(crate) fn parse(tokens: &mut VecDeque<Token>) -> Result<Exp, SchemeError> {
                 exp.push(parse(tokens)?);
             }
             tokens.pop_front();
-            return Ok(Exp::SubExp(exp));
+            return Ok(SchemeExp::List(exp));
         }
         Token::EndExp => Err(SchemeError("Unmatched ')'".to_string())),
-        Token::Quote => Ok(Exp::Literal(Atom::Quote(Box::from(parse(tokens)?)))),
+        Token::Quote => Ok(SchemeExp::Atom(Atom::Quote(Box::from(parse(tokens)?)))),
         Token::Literal(atom) => match atom {
-            Literal::Number(num) => Ok(Exp::Literal(Atom::Number(num.clone()))),
-            Literal::Symbol(symbol) => {
-                Ok(Exp::Literal(match symbol.to_ascii_lowercase().as_str() {
+            Literal::Number(num) => Ok(SchemeExp::Atom(Atom::Number(num.clone()))),
+            Literal::Symbol(symbol) => Ok(SchemeExp::Atom(
+                match symbol.to_ascii_lowercase().as_str() {
                     "nil" => Atom::Nil,
                     "let" => Atom::SpecialForm(SpecialForm::Let),
                     "define" => Atom::SpecialForm(SpecialForm::Define),
@@ -72,9 +46,9 @@ pub(crate) fn parse(tokens: &mut VecDeque<Token>) -> Result<Exp, SchemeError> {
                     "eval" => Atom::SpecialForm(SpecialForm::Eval),
                     "apply" => Atom::SpecialForm(SpecialForm::Apply),
                     _ => Atom::Symbol(symbol.to_string()),
-                }))
-            }
-            Literal::Boolean(b) => Ok(Exp::Literal(Atom::Boolean(*b))),
+                },
+            )),
+            Literal::Boolean(b) => Ok(SchemeExp::Atom(Atom::Boolean(*b))),
         },
         Token::StringDelim => Err(SchemeError("Strings not implemented yet".to_string())),
     }

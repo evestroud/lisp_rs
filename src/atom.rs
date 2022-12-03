@@ -3,15 +3,39 @@ use crate::{
     environment::Env,
     evaluator::eval_all,
     lib::{validate_num_args, SchemeError},
-    parser::Exp,
 };
 use std::{
     cell::RefCell,
-    fmt::{Debug, Display},
+    fmt::{self, Debug, Display},
     rc::Rc,
 };
 
 pub mod rational;
+
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) enum SchemeExp {
+    List(Vec<SchemeExp>),
+    Atom(Atom),
+}
+
+impl Display for SchemeExp {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let this = match self {
+            SchemeExp::List(exp) => {
+                // recursively parse subexpressions
+                format!(
+                    "({})",
+                    exp.iter()
+                        .map(|e| e.to_string())
+                        .collect::<Vec<String>>()
+                        .join(" ")
+                )
+            }
+            SchemeExp::Atom(atom) => atom.to_string(),
+        };
+        write!(f, "{}", this)
+    }
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum Atom {
@@ -20,7 +44,7 @@ pub(crate) enum Atom {
     Nil,
     Builtin(Rc<Builtin>),
     SpecialForm(SpecialForm),
-    Quote(Box<Exp>),
+    Quote(Box<SchemeExp>),
     Lambda(Box<Lambda>),
     Boolean(bool),
 }
@@ -127,7 +151,7 @@ impl Display for SpecialForm {
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct Lambda {
     pub(crate) params: Vec<String>,
-    pub(crate) body: Vec<Exp>,
+    pub(crate) body: Vec<SchemeExp>,
     pub(crate) env: Rc<RefCell<Env>>,
 }
 
