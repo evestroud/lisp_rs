@@ -30,14 +30,20 @@ impl Exp {
 
 impl Display for Exp {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                Exp::List(list) => list.iter().map(|item| item.to_string()).collect(),
-                Exp::Atom(atom) => atom.to_string(),
+        let string = match self {
+            Exp::List(list) => {
+                String::from("(")
+                    + list
+                        .iter()
+                        .map(|item| item.to_string())
+                        .collect::<Vec<String>>()
+                        .join(" ")
+                        .as_str()
+                    + ")"
             }
-        )
+            Exp::Atom(atom) => atom.to_string(),
+        };
+        write!(f, "{}", string)
     }
 }
 

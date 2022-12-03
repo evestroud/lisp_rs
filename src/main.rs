@@ -40,7 +40,7 @@ fn main() -> Result<()> {
                         // println!("{:?}", tokens);
                         match parse_all(&mut tokens) {
                             Ok(exp) => {
-                                println!("{:?}", exp);
+                                // println!("{:?}", exp);
                                 match eval_all(&exp, env.clone()) {
                                     Ok(result) => {
                                         println!("{}", result);
