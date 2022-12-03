@@ -21,10 +21,6 @@ pub(crate) fn evaluate(input: &SchemeExp, env: &mut Rc<RefCell<Env>>) -> Result<
     match input {
         SchemeExp::List(list) => {
             let operator = evaluate(&list[0], env)?;
-            let args = list[1..]
-                .iter()
-                .map(|exp| evaluate(exp, env).clone())
-                .collect::<Result<Vec<Atom>, _>>()?;
             if let Atom::SpecialForm(ref form) = operator {
                 match form {
                     SpecialForm::Define => do_define_form(&list[1..], env),
@@ -35,6 +31,10 @@ pub(crate) fn evaluate(input: &SchemeExp, env: &mut Rc<RefCell<Env>>) -> Result<
                     SpecialForm::Or => do_or_form(&list[1..], env),
                     SpecialForm::Eval => eval_all(&&list[1..].to_vec(), env),
                     SpecialForm::Apply => {
+                        let args = list[1..]
+                            .iter()
+                            .map(|exp| evaluate(exp, env).clone())
+                            .collect::<Result<Vec<Atom>, _>>()?;
                         if let Some(operator) = args.get(0) {
                             apply(operator.clone(), &args[1..], env)
                         } else {
@@ -43,6 +43,10 @@ pub(crate) fn evaluate(input: &SchemeExp, env: &mut Rc<RefCell<Env>>) -> Result<
                     }
                 }
             } else {
+                let args = list[1..]
+                    .iter()
+                    .map(|exp| evaluate(exp, env).clone())
+                    .collect::<Result<Vec<Atom>, _>>()?;
                 apply(operator, &args, env)
             }
         }
