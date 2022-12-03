@@ -21,9 +21,28 @@ pub(crate) fn evaluate(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Atom, 
             let operator = evaluate(&list[0], env)?;
             let args = list[1..]
                 .iter()
-                .map(|exp| exp.clone())
-                .collect::<Vec<Exp>>();
-            apply(operator, &args, env)
+                .map(|exp| evaluate(exp, env).clone())
+                .collect::<Result<Vec<Atom>, _>>()?;
+            if let Atom::SpecialForm(ref form) = operator {
+                match form {
+                    SpecialForm::Define => do_define_form(&list[1..], env),
+                    SpecialForm::Let => do_let_form(&list[1..], env),
+                    SpecialForm::Lambda => do_lambda_form(&list[1..], env),
+                    SpecialForm::If => do_if_form(&list[1..], env),
+                    SpecialForm::And => do_and_form(&list[1..], env),
+                    SpecialForm::Or => do_or_form(&list[1..], env),
+                    SpecialForm::Eval => eval_all(&&list[1..].to_vec(), env),
+                    SpecialForm::Apply => {
+                        if let Some(operator) = args.get(0) {
+                            apply(operator.clone(), &args[1..], env)
+                        } else {
+                            return Err(SchemeError("Expected an argument".to_string()));
+                        }
+                    }
+                }
+            } else {
+                apply(operator, &args, env)
+            }
         }
         Exp::Literal(atom) => match atom {
             Atom::Symbol(symbol) => env.borrow().get(&symbol).map(|val| val.clone()),
@@ -39,39 +58,18 @@ pub(crate) fn evaluate(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Atom, 
     }
 }
 
-fn apply(operator: Atom, args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
+fn apply(operator: Atom, args: &[Atom], env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
     if args.len() == 0 {
         return Err(SchemeError("Expected an expression".to_string()));
     }
-    let first = evaluate(&args[0], env)?;
-    let rest = &args[1..];
-    match first {
-        Atom::Builtin(f) => {
-            let rest = rest
-                .iter()
-                .map(|exp| evaluate(exp, env))
-                .collect::<Result<Vec<Atom>, SchemeError>>()?;
-            (f.func)(rest, env)
-        }
-        Atom::Lambda(mut lambda) => lambda.eval(
-            rest.iter()
-                .map(|exp| evaluate(exp, env))
-                .collect::<Result<Vec<Atom>, SchemeError>>()?,
-        ),
-        Atom::SpecialForm(form) => match form {
-            SpecialForm::Define => do_define_form(rest, env),
-            SpecialForm::Let => do_let_form(rest, env),
-            SpecialForm::Lambda => do_lambda_form(rest, env),
-            SpecialForm::If => do_if_form(rest, env),
-            SpecialForm::And => do_and_form(rest, env),
-            SpecialForm::Or => do_or_form(rest, env),
-            SpecialForm::Eval => eval_all(&rest.to_vec(), env),
-            SpecialForm::Apply => apply(evaluate(&rest[0], env)?, &rest.to_vec(), env),
-        },
+    match operator {
+        Atom::Builtin(f) => (f.func)(args.to_vec(), env),
+        Atom::Lambda(mut lambda) => lambda.eval(args),
+
         Atom::Nil => return Ok(Atom::Nil),
         _ => Err(SchemeError(format!(
             "Expected a function, found {:?}",
-            first
+            operator
         ))),
     }
 }

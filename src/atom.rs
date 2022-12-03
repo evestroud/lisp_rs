@@ -132,7 +132,7 @@ pub(crate) struct Lambda {
 }
 
 impl Lambda {
-    pub(crate) fn eval(&mut self, args: Vec<Atom>) -> Result<Atom, SchemeError> {
+    pub(crate) fn eval(&mut self, args: &[Atom]) -> Result<Atom, SchemeError> {
         validate_num_args(&args, self.params.len(), self.params.len())?;
         for (name, val) in self.params.iter().zip(args) {
             self.env.borrow_mut().set(name, &val);
