@@ -1,25 +1,39 @@
 use crate::lib::validate_num_args;
+use crate::types::function::{Function, Lambda};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::environment::Env;
+use crate::environment::{create_closure, Env};
 use crate::lib::SchemeError;
-use crate::types::{Exp, Value};
+use crate::types::{Exp, SpecialForm, Value};
 
-pub(crate) fn eval_all(input: &[Exp], env: Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+pub(crate) fn eval_all(input: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let mut result = Exp::List(Vec::new());
     for exp in input {
-        result = evaluate(exp, env.clone())?;
+        result = evaluate(exp, env)?;
     }
     Ok(result)
 }
 
-pub(crate) fn evaluate(input: &Exp, env: Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+pub(crate) fn evaluate(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     match input {
         Exp::List(list) => {
             validate_num_args(&list, 1, 0)?;
-            let operator = evaluate(list.get(0).unwrap(), env.clone())?;
-            apply(&operator, &Exp::List(list[1..].to_vec()), env.clone())
+            let operator = evaluate(list.get(0).unwrap(), env)?;
+            if let Exp::Atom(Value::SpecialForm(form)) = operator {
+                match form {
+                    SpecialForm::Define => do_define_form(&list[1..], env),
+                    SpecialForm::Let => do_let_form(&list[1..], env),
+                    SpecialForm::Lambda => do_lambda_form(&list[1..], env),
+                    SpecialForm::If => todo!(),
+                    SpecialForm::And => todo!(),
+                    SpecialForm::Or => todo!(),
+                    SpecialForm::Eval => todo!(),
+                    SpecialForm::Apply => todo!(),
+                }
+            } else {
+                apply(&operator, &Exp::List(list[1..].to_vec()), env)
+            }
         }
         Exp::Atom(atom) => match atom {
             Value::Symbol(symbol) => Ok(env.borrow().get(symbol)?),
@@ -29,18 +43,22 @@ pub(crate) fn evaluate(input: &Exp, env: Rc<RefCell<Env>>) -> Result<Exp, Scheme
     }
 }
 
-pub(crate) fn eval_args(input: &[Exp], env: Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+pub(crate) fn eval_args(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let mut results = Vec::new();
-    for exp in input {
-        results.push(evaluate(exp, env.clone())?);
+    for exp in input.unwrap_list()? {
+        results.push(evaluate(&exp, env)?);
     }
     Ok(Exp::List(results))
 }
 
-pub(crate) fn apply(operator: &Exp, args: &Exp, env: Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-    if let Value::Function(function) = operator.unwrap_atom()? {
-        // todo: Builtin and Lambda, Function.call method
-        function.call(args, env)
+pub(crate) fn apply(
+    operator: &Exp,
+    args: &Exp,
+    env: &mut Rc<RefCell<Env>>,
+) -> Result<Exp, SchemeError> {
+    if let Value::Function(mut function) = operator.unwrap_atom()? {
+        let args = eval_args(args, env)?;
+        function.call(&args, env)
     } else {
         Err(SchemeError(format!(
             "Expected a function, found {}",
@@ -48,6 +66,96 @@ pub(crate) fn apply(operator: &Exp, args: &Exp, env: Rc<RefCell<Env>>) -> Result
         )))
     }
 }
+
+fn do_define_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    validate_num_args(args, 2, 2)?;
+    let second = &args[0];
+    match second {
+        Exp::List(signature) => {
+            // if let Exp::Atom(Value::Symbol(name)) =
+            //     evaluate(&Exp::Atom(signature[0].unwrap_atom()?), env)?
+            // {
+            //     let params = Exp::List(signature[1..].to_vec());
+            //     let lambda_form_args = vec![&[params][..], &args[1..]].concat();
+            //     let lambda = do_lambda_form(lambda_form_args.as_slice(), env)?;
+            //     env.borrow_mut().set(&name, &lambda);
+            //     return Ok(Value::Nil);
+            // } else {
+            //     return Err(SchemeError(format!(
+            //         "Expected a symbol as the name, found {}",
+            //         signature[0]
+            //     )));
+            // }
+            todo!()
+        }
+        Exp::Atom(val) => {
+            if let Value::Symbol(symbol) = val {
+                let third = evaluate(&args[1], env)?;
+                env.borrow_mut().set(&symbol, &third);
+                return Ok(Exp::new_list());
+            }
+        }
+    }
+    Err(SchemeError(format!(
+        "Expected a symbol as the name, found {}",
+        second
+    )))
+}
+
+fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    validate_num_args(args, 2, 0)?;
+    let mut closure = create_closure(env.clone());
+
+    match &args[0] {
+        Exp::List(pairs) => {
+            for pair in pairs {
+                if let Exp::List(pair_vec) = pair {
+                    validate_num_args(pair_vec, 2, 0)?;
+                    if let Value::Symbol(name) = pair_vec.get(0).unwrap().unwrap_atom()? {
+                        let value = evaluate(pair_vec.get(1).unwrap(), &mut closure)?;
+                        closure.borrow_mut().set(&name, &value);
+                    }
+                }
+            }
+        }
+        Exp::Atom(_) => return Err(SchemeError("Let expects a list of definition".to_string())),
+    }
+    eval_all(
+        &args[1..]
+            .iter()
+            .map(|arg| arg.clone())
+            .collect::<Vec<Exp>>(),
+        &mut closure,
+    )
+}
+
+fn do_lambda_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    validate_num_args(args, 2, 0)?;
+    let params = match &args[0] {
+        Exp::List(param_list) => param_list
+            .iter()
+            .map(|arg| {
+                let atom = arg.unwrap_atom()?;
+                match atom {
+                    Value::Symbol(name) => Ok(name.to_string()),
+                    _ => Err(SchemeError(format!(
+                        "Parameter list expects symbols, found {}",
+                        atom
+                    ))),
+                }
+            })
+            .collect::<Result<Vec<String>, SchemeError>>()?,
+        Exp::Atom(_) => todo!(),
+    };
+    let body = args[1..].to_vec();
+    let env = create_closure(env.clone());
+    Ok(Exp::Atom(Value::Function(Function::Lambda(Lambda {
+        params,
+        body,
+        env,
+    }))))
+}
+
 // pub(crate) fn evaluate(input: &SchemeExp, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {
 //     match input {
 //         SchemeExp::List(list) => {

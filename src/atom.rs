@@ -79,36 +79,3 @@ impl Display for Atom {
         write!(f, "{}", val)
     }
 }
-
-#[derive(Clone, Debug, PartialEq)]
-pub(crate) struct Lambda {
-    pub(crate) params: Vec<String>,
-    pub(crate) body: Vec<SchemeExp>,
-    pub(crate) env: Rc<RefCell<Env>>,
-}
-
-impl Lambda {
-    pub(crate) fn eval(&mut self, args: &[Atom]) -> Result<Atom, SchemeError> {
-        validate_num_args(&args, self.params.len(), self.params.len())?;
-        for (name, val) in self.params.iter().zip(args) {
-            self.env.borrow_mut().set(name, &val);
-        }
-
-        eval_all(&self.body, &mut self.env)
-    }
-}
-
-impl Display for Lambda {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let string = format!(
-            "(lambda ({}) {})",
-            self.params.join(" "),
-            self.body
-                .iter()
-                .map(|exp| exp.to_string())
-                .reduce(|p, c| p + " " + &c)
-                .unwrap_or("".to_string())
-        );
-        write!(f, "{}", string)
-    }
-}

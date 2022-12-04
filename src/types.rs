@@ -26,6 +26,10 @@ impl Exp {
             Exp::Atom(_) => Err(SchemeError(format!("Expected a list, found {}", self))),
         }
     }
+
+    pub(crate) fn new_list() -> Self {
+        Self::List(Vec::new())
+    }
 }
 
 impl Display for Exp {

@@ -41,7 +41,7 @@ fn main() -> Result<()> {
                         match parse_all(&mut tokens) {
                             Ok(exp) => {
                                 // println!("{:?}", exp);
-                                match eval_all(&exp, env.clone()) {
+                                match eval_all(&exp, &mut env) {
                                     Ok(result) => {
                                         println!("{}", result);
                                     }
@@ -72,3 +72,6 @@ fn main() -> Result<()> {
     }
     rl.save_history("history.txt")
 }
+
+#[cfg(test)]
+mod test;

@@ -1,3 +1,5 @@
+use crate::eval_all;
+use crate::lib::validate_num_args;
 use crate::types::SchemeError;
 use std::fmt::Debug;
 use std::{cell::RefCell, fmt::Display, rc::Rc};
@@ -9,13 +11,18 @@ use super::Exp;
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum Function {
     Builtin(Builtin),
-    // Lambda: Lambda
+    Lambda(Lambda),
 }
 
 impl Function {
-    pub(crate) fn call(&self, args: &Exp, mut env: Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    pub(crate) fn call(
+        &mut self,
+        args: &Exp,
+        env: &mut Rc<RefCell<Env>>,
+    ) -> Result<Exp, SchemeError> {
         match self {
-            Function::Builtin(f) => (f.func)(args.clone(), &mut env),
+            Function::Builtin(b) => (b.func)(args.clone(), env),
+            Function::Lambda(l) => l.eval(args),
         }
     }
 }
@@ -27,6 +34,7 @@ impl Display for Function {
             "{}",
             match self {
                 Function::Builtin(f) => f.name.clone(),
+                Function::Lambda(l) => l.to_string(),
             }
         )
     }
@@ -58,5 +66,39 @@ impl PartialEq for Builtin {
 
     fn eq(&self, other: &Self) -> bool {
         self.name == other.name
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) struct Lambda {
+    pub(crate) params: Vec<String>,
+    pub(crate) body: Vec<Exp>,
+    pub(crate) env: Rc<RefCell<Env>>,
+}
+
+impl Lambda {
+    pub(crate) fn eval(&mut self, args: &Exp) -> Result<Exp, SchemeError> {
+        let args = args.unwrap_list()?;
+        validate_num_args(&args, self.params.len(), self.params.len())?;
+        for (name, val) in self.params.iter().zip(args) {
+            self.env.borrow_mut().set(name, &val);
+        }
+
+        eval_all(&self.body, &mut self.env)
+    }
+}
+
+impl Display for Lambda {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let string = format!(
+            "(lambda ({}) {})",
+            self.params.join(" "),
+            self.body
+                .iter()
+                .map(|exp| exp.to_string())
+                .reduce(|p, c| p + " " + &c)
+                .unwrap_or("".to_string())
+        );
+        write!(f, "{}", string)
     }
 }
