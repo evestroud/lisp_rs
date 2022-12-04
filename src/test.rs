@@ -126,4 +126,12 @@ mod integration_tests {
         let result = evaluate_input("(and false false false false)").unwrap();
         assert_eq!(result, Exp::Atom(Value::Boolean(false)));
     }
+
+    #[test]
+    fn test_eval_apply() {
+        let result = evaluate_input("(eval '(+ 1 1))").unwrap();
+        assert_eq!(result, Exp::Atom(Value::Number(Rational::from(2.0))));
+        let result = evaluate_input("(apply + '(1 1))").unwrap();
+        assert_eq!(result, Exp::Atom(Value::Number(Rational::from(2.0))));
+    }
 }

@@ -28,8 +28,17 @@ pub(crate) fn evaluate(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, S
                     SpecialForm::If => do_if_form(&list[1..], env),
                     SpecialForm::And => do_and_form(&list[1..], env),
                     SpecialForm::Or => do_or_form(&list[1..], env),
-                    // SpecialForm::Eval => evaluate(&Exp::from(&list[..]), env),
-                    // SpecialForm::Apply => apply(&operator, &Exp::from(&list[1..]), env),
+                    SpecialForm::Eval => {
+                        validate_num_args(&list, 1, 1)?;
+                        evaluate(&evaluate(list.get(1).unwrap(), env)?, env)
+                    }
+                    SpecialForm::Apply => {
+                        let apply_list = &list[1..];
+                        validate_num_args(&apply_list, 2, 2)?;
+                        let operator = evaluate(apply_list.get(0).unwrap(), env)?;
+                        let args = evaluate(apply_list.get(1).unwrap(), env)?;
+                        apply(&operator, &args, env)
+                    }
                 }
             } else {
                 apply(&operator, &Exp::List(list[1..].to_vec()), env)

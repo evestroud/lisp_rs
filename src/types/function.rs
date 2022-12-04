@@ -21,7 +21,7 @@ impl Function {
         env: &mut Rc<RefCell<Env>>,
     ) -> Result<Exp, SchemeError> {
         match self {
-            Function::Builtin(b) => (b.func)(args.clone(), env),
+            Function::Builtin(b) => (b.func)(args, env),
             Function::Lambda(l) => l.eval(args),
         }
     }
@@ -42,7 +42,7 @@ impl Display for Function {
 
 #[derive(Clone)]
 pub(crate) struct Builtin {
-    pub(crate) func: &'static dyn Fn(Exp, &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError>,
+    pub(crate) func: &'static dyn Fn(&Exp, &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError>,
     pub(crate) name: String,
 }
 
