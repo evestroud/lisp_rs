@@ -7,13 +7,22 @@ mod integration_tests {
     use std::cell::RefCell;
     use std::rc::Rc;
 
-    use crate::{environment::Env, evaluator::evaluate, parser::parse, tokenizer::tokenize};
+    use crate::{environment::Env, tokenizer::tokenize};
 
     fn evaluate_input(input: &str) -> Result<Exp, SchemeError> {
         let mut env = Rc::new(RefCell::new(Env::new()));
         let mut tokens = tokenize(input)?;
         let exp = parse_all(&mut tokens)?;
         eval_all(&exp, &mut env)
+    }
+
+    fn evaluate_input_with_env(
+        input: &str,
+        env: &mut Rc<RefCell<Env>>,
+    ) -> Result<Exp, SchemeError> {
+        let mut tokens = tokenize(input)?;
+        let exp = parse_all(&mut tokens)?;
+        eval_all(&exp, env)
     }
 
     #[test]
@@ -47,6 +56,22 @@ mod integration_tests {
         assert_eq!(result, Exp::Atom(Value::Number(Rational::from(1.0))));
 
         let result = evaluate_input("(define (a) 1) (a)").unwrap();
+        assert_eq!(result, Exp::Atom(Value::Number(Rational::from(1.0))));
+    }
+
+    #[test]
+    fn test_closures() {
+        let mut env = Rc::new(RefCell::new(Env::new()));
+        evaluate_input_with_env("(define a 1)", &mut env).unwrap();
+
+        let result = evaluate_input_with_env("((lambda (a) a) 2)", &mut env).unwrap();
+        assert_eq!(result, Exp::Atom(Value::Number(Rational::from(2.0))));
+        let result = evaluate_input_with_env("a", &mut env).unwrap();
+        assert_eq!(result, Exp::Atom(Value::Number(Rational::from(1.0))));
+
+        let result = evaluate_input_with_env("(let ((a 2)) a)", &mut env).unwrap();
+        assert_eq!(result, Exp::Atom(Value::Number(Rational::from(2.0))));
+        let result = evaluate_input_with_env("a", &mut env).unwrap();
         assert_eq!(result, Exp::Atom(Value::Number(Rational::from(1.0))));
     }
 
@@ -88,11 +113,17 @@ mod integration_tests {
 
     #[test]
     fn test_and() {
-        todo!()
+        let result = evaluate_input("(and 1 2 false true)").unwrap();
+        assert_eq!(result, Exp::Atom(Value::Boolean(false)));
+        let result = evaluate_input("(and true 1 2 3)").unwrap();
+        assert_eq!(result, Exp::Atom(Value::Number(Rational::from(3.0))));
     }
 
     #[test]
     fn test_or() {
-        todo!()
+        let result = evaluate_input("(or 1 2 false true)").unwrap();
+        assert_eq!(result, Exp::Atom(Value::Number(Rational::from(1.0))));
+        let result = evaluate_input("(and false false false false)").unwrap();
+        assert_eq!(result, Exp::Atom(Value::Boolean(false)));
     }
 }
