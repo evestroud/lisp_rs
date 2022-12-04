@@ -14,13 +14,71 @@ use super::Exp;
 use super::Value;
 
 pub(crate) fn builtins_map() -> HashMap<String, Exp> {
-    HashMap::from([(
-        "+".to_string(),
-        Exp::Atom(Value::Function(Function::Builtin(Builtin {
-            func: &add,
-            name: "+".to_string(),
-        }))),
-    )])
+    HashMap::from([
+        (
+            "+".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &add,
+                name: "+".to_string(),
+            }))),
+        ),
+        (
+            "-".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &sub,
+                name: "-".to_string(),
+            }))),
+        ),
+        (
+            "*".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &mul,
+                name: "*".to_string(),
+            }))),
+        ),
+        (
+            "/".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &div,
+                name: "/".to_string(),
+            }))),
+        ),
+        (
+            "eq".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &eq,
+                name: "eq".to_string(),
+            }))),
+        ),
+        (
+            "<".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &lt,
+                name: "<".to_string(),
+            }))),
+        ),
+        (
+            ">".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &gt,
+                name: ">".to_string(),
+            }))),
+        ),
+        (
+            "<=".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &lte,
+                name: "<=".to_string(),
+            }))),
+        ),
+        (
+            ">=".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &gte,
+                name: ">=".to_string(),
+            }))),
+        ),
+    ])
 }
 
 pub(crate) fn add(args: Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
