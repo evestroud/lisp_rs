@@ -44,10 +44,10 @@ pub(crate) fn builtins_map() -> HashMap<String, Exp> {
             }))),
         ),
         (
-            "eq".to_string(),
+            "eq?".to_string(),
             Exp::Atom(Value::Function(Function::Builtin(Builtin {
                 func: &eq,
-                name: "eq".to_string(),
+                name: "eq?".to_string(),
             }))),
         ),
         (

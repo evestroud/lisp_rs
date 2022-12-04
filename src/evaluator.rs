@@ -25,11 +25,11 @@ pub(crate) fn evaluate(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, S
                     SpecialForm::Define => do_define_form(&list[1..], env),
                     SpecialForm::Let => do_let_form(&list[1..], env),
                     SpecialForm::Lambda => do_lambda_form(&list[1..], env),
-                    SpecialForm::If => todo!(),
-                    SpecialForm::And => todo!(),
-                    SpecialForm::Or => todo!(),
-                    SpecialForm::Eval => todo!(),
-                    SpecialForm::Apply => todo!(),
+                    SpecialForm::If => do_if_form(&list[1..], env),
+                    SpecialForm::And => do_and_form(&list[1..], env),
+                    SpecialForm::Or => do_or_form(&list[1..], env),
+                    // SpecialForm::Eval => evaluate(&Exp::from(&list[..]), env),
+                    // SpecialForm::Apply => apply(&operator, &Exp::from(&list[1..]), env),
                 }
             } else {
                 apply(&operator, &Exp::List(list[1..].to_vec()), env)
@@ -152,6 +152,37 @@ fn do_lambda_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, Schem
         body,
         env,
     }))))
+}
+
+fn do_if_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    validate_num_args(args, 3, 3)?;
+    let condition = evaluate(&args[0], env)?.unwrap_atom()?;
+    if let Value::Boolean(false) = condition {
+        return evaluate(&args[2], env);
+    }
+    evaluate(&args[1], env)
+}
+
+fn do_and_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let mut val = Value::Boolean(true);
+    for a in args {
+        val = evaluate(a, env)?.unwrap_atom()?;
+        if val == Value::Boolean(false) {
+            break;
+        }
+    }
+    Ok(Exp::Atom(val))
+}
+
+fn do_or_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let mut val = Value::Boolean(false);
+    for a in args {
+        val = evaluate(a, env)?.unwrap_atom()?;
+        if val != Value::Boolean(false) {
+            break;
+        }
+    }
+    Ok(Exp::Atom(val))
 }
 
 // pub(crate) fn evaluate(input: &SchemeExp, env: &mut Rc<RefCell<Env>>) -> Result<Atom, SchemeError> {

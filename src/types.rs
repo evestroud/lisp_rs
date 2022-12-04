@@ -51,6 +51,12 @@ impl Display for Exp {
     }
 }
 
+impl From<&[Exp]> for Exp {
+    fn from(list: &[Exp]) -> Self {
+        Self::List(list.to_vec())
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum Value {
     // Nil,
@@ -88,8 +94,8 @@ pub(crate) enum SpecialForm {
     If,
     And,
     Or,
-    Eval,
-    Apply,
+    // Eval,
+    // Apply,
 }
 
 impl From<&str> for SpecialForm {
@@ -101,8 +107,8 @@ impl From<&str> for SpecialForm {
             "if" => Self::If,
             "and" => Self::And,
             "or" => Self::Or,
-            "eval" => Self::Eval,
-            "apply" => Self::Apply,
+            // "eval" => Self::Eval,
+            // "apply" => Self::Apply,
             _ => panic!("SpecialForm::from called on incorrect string"),
         }
     }
@@ -120,8 +126,8 @@ impl Display for SpecialForm {
                 SpecialForm::If => "if".to_string(),
                 SpecialForm::And => "and".to_string(),
                 SpecialForm::Or => "or".to_string(),
-                SpecialForm::Eval => "eval".to_string(),
-                SpecialForm::Apply => "apply".to_string(),
+                // SpecialForm::Eval => "eval".to_string(),
+                // SpecialForm::Apply => "apply".to_string(),
             }
         )
     }
