@@ -1,9 +1,8 @@
-use std::collections::VecDeque;
-
 use crate::{
     lib::SchemeError,
     types::{rational::Rational, SpecialForm, Value},
 };
+use std::collections::VecDeque;
 
 #[derive(Debug, PartialEq)]
 pub(crate) enum Token {
@@ -39,7 +38,7 @@ fn tokenize_str(token: &str) -> Result<Token, SchemeError> {
 
     if let Some(c) = token.chars().next() {
         if c.is_ascii_digit()
-            // Numbers can start with + and ., but make sure it's not the whole token
+            // Numbers can start with . and -, but make sure it's not the whole token
             || (['.', '-'].contains(&c) && ![".", "-"].contains(&token))
         {
             Ok(Token::Literal(Value::Number(Rational::from(

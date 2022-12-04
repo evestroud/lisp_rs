@@ -1,12 +1,15 @@
-use crate::eval_all;
-use crate::lib::validate_num_args;
-use crate::types::SchemeError;
+use crate::{
+    environment::Env,
+    eval_all,
+    lib::validate_num_args,
+    types::{Exp, SchemeError},
+};
 use std::fmt::Debug;
 use std::{cell::RefCell, fmt::Display, rc::Rc};
 
-use crate::environment::Env;
-
-use super::Exp;
+/*
+    Function - allows calling lambdas and hardcoded functions
+*/
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum Function {
@@ -40,6 +43,10 @@ impl Display for Function {
     }
 }
 
+/*
+    Builtin - Type definition
+*/
+
 #[derive(Clone)]
 pub(crate) struct Builtin {
     pub(crate) func: &'static dyn Fn(&Exp, &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError>,
@@ -68,6 +75,10 @@ impl PartialEq for Builtin {
         self.name == other.name
     }
 }
+
+/*
+    Lambda
+*/
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct Lambda {

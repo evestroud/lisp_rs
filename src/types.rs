@@ -6,6 +6,10 @@ pub(crate) mod default_env;
 pub(crate) mod function;
 pub(crate) mod rational;
 
+/*
+    Expressions
+*/
+
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum Exp {
     List(Vec<Exp>),
@@ -57,16 +61,18 @@ impl From<&[Exp]> for Exp {
     }
 }
 
+/*
+    Atomic values
+*/
+
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum Value {
-    // Nil,
     Boolean(bool),
     Number(Rational),
     Symbol(String),
-    // Builtin(Rc<Builtin>),
     SpecialForm(SpecialForm),
     Quote(Box<Exp>),
-    Function(Function), // Lambda(Box<Lambda>),
+    Function(Function),
 }
 
 impl Display for Value {
@@ -85,6 +91,10 @@ impl Display for Value {
         )
     }
 }
+
+/*
+    Special forms - just a path-choosing enum, no behavior or data
+*/
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum SpecialForm {

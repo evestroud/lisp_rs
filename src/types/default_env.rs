@@ -1,17 +1,12 @@
-use crate::lib::validate_num_args;
-
-use crate::types::Rational;
-use crate::types::SchemeError;
-use crate::Env;
-use std::collections::HashMap;
-use std::rc::Rc;
-
-use std::cell::RefCell;
-
-use super::function::Builtin;
-use super::function::Function;
-use super::Exp;
-use super::Value;
+use crate::{
+    lib::validate_num_args,
+    types::{
+        function::{Builtin, Function},
+        Exp, Rational, SchemeError, Value,
+    },
+    Env,
+};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 pub(crate) fn builtins_map() -> HashMap<String, Exp> {
     HashMap::from([
@@ -88,8 +83,66 @@ pub(crate) fn builtins_map() -> HashMap<String, Exp> {
                 name: ">=".to_string(),
             }))),
         ),
+        /*
+
+            Type checking
+
+        */
+        (
+            "number?".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &number,
+                name: "number?".to_string(),
+            }))),
+        ),
+        (
+            "symbol?".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &symbol,
+                name: "symbol?".to_string(),
+            }))),
+        ),
+        (
+            "nil?".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &nil,
+                name: "nil?".to_string(),
+            }))),
+        ),
+        (
+            "function?".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &function,
+                name: "function?".to_string(),
+            }))),
+        ),
+        (
+            "special_form?".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &special_form,
+                name: "special_form?".to_string(),
+            }))),
+        ),
+        (
+            "quote?".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &quote,
+                name: "quote?".to_string(),
+            }))),
+        ),
+        (
+            "boolean?".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &boolean,
+                name: "boolean?".to_string(),
+            }))),
+        ),
     ])
 }
+
+/*
+    Basic math
+*/
 
 pub(crate) fn add(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let mut result = Rational::from(0.0);
@@ -122,8 +175,8 @@ pub(crate) fn sub(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
     }
 
     for item in args[1..].iter() {
-        if let Exp::Atom(Value::Number(num)) = first {
-            result = num.clone();
+        if let Exp::Atom(Value::Number(num)) = item {
+            result = result.sub(&num.clone());
         } else {
             return Err(SchemeError(format!("Expected a number, found {:?}", first)));
         }
@@ -162,8 +215,8 @@ pub(crate) fn div(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
 }
 
 /*
- *    Comparison
- */
+   Comparison
+*/
 
 pub(crate) fn eq(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
@@ -223,49 +276,72 @@ pub(crate) fn lte(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
  *    Type Checking
  */
 
-// pub(crate) fn number(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-//     let args = args.unwrap_list()?;
-//     validate_num_args(&args, 1, 1)?;
-//     Ok(Exp::Atom(Value::Boolean(args[0].is_number())))
-// }
+pub(crate) fn number(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
+    validate_num_args(&args, 1, 1)?;
+    if let Value::Number(_) = args.get(0).unwrap().unwrap_atom()? {
+        Ok(Exp::Atom(Value::Boolean(true)))
+    } else {
+        Ok(Exp::Atom(Value::Boolean(false)))
+    }
+}
 
-// pub(crate) fn symbol(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-//     let args = args.unwrap_list()?;
-//     validate_num_args(&args, 1, 1)?;
-//     Ok(Exp::Atom(Value::Boolean(args[0].is_symbol())))
-// }
+pub(crate) fn symbol(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
+    validate_num_args(&args, 1, 1)?;
+    if let Value::Symbol(_) = args.get(0).unwrap().unwrap_atom()? {
+        Ok(Exp::Atom(Value::Boolean(true)))
+    } else {
+        Ok(Exp::Atom(Value::Boolean(false)))
+    }
+}
 
-// pub(crate) fn nil(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-//     let args = args.unwrap_list()?;
-//     validate_num_args(&args, 1, 1)?;
-//     Ok(Exp::Atom(Value::Boolean(args[0].is_nil())))
-// }
+pub(crate) fn nil(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
+    validate_num_args(&args, 1, 1)?;
+    if args.get(0).unwrap().unwrap_list()?.len() == 0 {
+        Ok(Exp::Atom(Value::Boolean(true)))
+    } else {
+        Ok(Exp::Atom(Value::Boolean(false)))
+    }
+}
 
-// pub(crate) fn builtin(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-//     let args = args.unwrap_list()?;
-//     validate_num_args(&args, 1, 1)?;
-//     Ok(Exp::Atom(Value::Boolean(args[0].is_builtin())))
-// }
+pub(crate) fn function(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
+    validate_num_args(&args, 1, 1)?;
+    if let Value::Function(_) = args.get(0).unwrap().unwrap_atom()? {
+        Ok(Exp::Atom(Value::Boolean(true)))
+    } else {
+        Ok(Exp::Atom(Value::Boolean(false)))
+    }
+}
 
-// pub(crate) fn special_form(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-//     let args = args.unwrap_list()?;
-//     validate_num_args(&args, 1, 1)?;
-//     Ok(Exp::Atom(Value::Boolean(args[0].is_special_form())))
-// }
+pub(crate) fn special_form(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
+    validate_num_args(&args, 1, 1)?;
+    if let Value::SpecialForm(_) = args.get(0).unwrap().unwrap_atom()? {
+        Ok(Exp::Atom(Value::Boolean(true)))
+    } else {
+        Ok(Exp::Atom(Value::Boolean(false)))
+    }
+}
 
-// pub(crate) fn quote(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-//     let args = args.unwrap_list()?;
-//     validate_num_args(&args, 1, 1)?;
-//     Ok(Exp::Atom(Value::Boolean(args[0].is_quote())))
-// }
+pub(crate) fn quote(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
+    validate_num_args(&args, 1, 1)?;
+    if let Value::Quote(_) = args.get(0).unwrap().unwrap_atom()? {
+        Ok(Exp::Atom(Value::Boolean(true)))
+    } else {
+        Ok(Exp::Atom(Value::Boolean(false)))
+    }
+}
 
-// pub(crate) fn lambda(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-//     let args = args.unwrap_list()?;
-//     validate_num_args(&args, 1, 1)?;
-//     Ok(Exp::Atom(Value::Boolean(args[0].is_lambda())))
-// }
-
-// pub(crate) fn boolean(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-//     validate_num_args(&args, 1, 1)?;
-//     Ok(Exp::Atom(Value::Boolean(args[0].is_boolean())))
-// }
+pub(crate) fn boolean(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
+    validate_num_args(&args, 1, 1)?;
+    if let Value::Boolean(_) = args.get(0).unwrap().unwrap_atom()? {
+        Ok(Exp::Atom(Value::Boolean(true)))
+    } else {
+        Ok(Exp::Atom(Value::Boolean(false)))
+    }
+}

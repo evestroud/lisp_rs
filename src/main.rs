@@ -1,20 +1,9 @@
-// use std::cell::RefCell;
-// use std::rc::Rc;
-
-use std::cell::RefCell;
-use std::rc::Rc;
-
-// use crate::{evaluator::eval_all, parser::parse_all, tokenizer::tokenize};
-use environment::Env;
-use parser::parse_all;
+use crate::environment::Env;
+use crate::{evaluator::eval_all, parser::parse_all, tokenizer::tokenize};
 use rustyline::error::ReadlineError;
 use rustyline::{Editor, Result};
-use tokenizer::tokenize;
+use std::{cell::RefCell, rc::Rc};
 
-use crate::evaluator::eval_all;
-
-// mod atom;
-// mod builtin;
 mod environment;
 mod evaluator;
 mod lib;
@@ -24,7 +13,6 @@ mod types;
 
 fn main() -> Result<()> {
     let mut rl = Editor::<()>::new()?;
-
     let mut env = Rc::new(RefCell::new(Env::new()));
 
     loop {
@@ -35,6 +23,7 @@ fn main() -> Result<()> {
                     continue;
                 }
                 rl.add_history_entry(line.as_str());
+
                 match tokenize(&line) {
                     Ok(mut tokens) => {
                         // println!("{:?}", tokens);
@@ -49,19 +38,13 @@ fn main() -> Result<()> {
                                 }
                             }
                             Err(e) => println!("Parse Error: {}", e),
-                            //     Ok(expression) => match eval_all(&expression, &mut env) {
-                            //         Ok(output) => match output.to_string().as_str() {
-                            //             "Nil" => (),
-                            //             _ => println!("{}", output),
-                            //         },
-                            //         Err(e) => println!("Evaluation Error: {}", e),
-                            //     },
-                            //     Err(e) => println!("Parse Error: {}", e),
                         }
                     }
                     Err(e) => println!("Syntax Error: {}", e),
                 }
             }
+
+            // TODO - when multiline input is available - C-c clears buffer
             Err(ReadlineError::Interrupted) => continue,
             Err(ReadlineError::Eof) => break,
             Err(err) => {

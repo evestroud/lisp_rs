@@ -1,7 +1,8 @@
-use crate::{lib::SchemeError, types::default_env::builtins_map};
+use crate::{
+    lib::SchemeError,
+    types::{default_env::builtins_map, Exp},
+};
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
-
-use crate::types::Exp;
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct Env {

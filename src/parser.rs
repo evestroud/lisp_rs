@@ -1,6 +1,8 @@
-use crate::lib::SchemeError;
-use crate::tokenizer::Token;
-use crate::types::{Exp, Value};
+use crate::{
+    lib::SchemeError,
+    tokenizer::Token,
+    types::{Exp, Value},
+};
 use std::collections::VecDeque;
 
 pub(crate) fn parse_all(tokens: &mut VecDeque<Token>) -> Result<Vec<Exp>, SchemeError> {

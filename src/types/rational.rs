@@ -1,6 +1,4 @@
-use std;
-
-use std::fmt::Display;
+use std::{self, fmt::Display};
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct Rational {
