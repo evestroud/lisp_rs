@@ -72,21 +72,19 @@ fn do_define_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, Schem
     let second = &args[0];
     match second {
         Exp::List(signature) => {
-            // if let Exp::Atom(Value::Symbol(name)) =
-            //     evaluate(&Exp::Atom(signature[0].unwrap_atom()?), env)?
-            // {
-            //     let params = Exp::List(signature[1..].to_vec());
-            //     let lambda_form_args = vec![&[params][..], &args[1..]].concat();
-            //     let lambda = do_lambda_form(lambda_form_args.as_slice(), env)?;
-            //     env.borrow_mut().set(&name, &lambda);
-            //     return Ok(Value::Nil);
-            // } else {
-            //     return Err(SchemeError(format!(
-            //         "Expected a symbol as the name, found {}",
-            //         signature[0]
-            //     )));
-            // }
-            todo!()
+            validate_num_args(signature, 1, 0)?;
+            if let Value::Symbol(name) = signature.get(0).unwrap().unwrap_atom()? {
+                let params = Exp::List(signature[1..].to_vec());
+                let lambda_form_args = vec![&[params][..], &args[1..]].concat();
+                let lambda = do_lambda_form(lambda_form_args.as_slice(), env)?;
+                env.borrow_mut().set(&name, &lambda);
+                return Ok(Exp::new_list());
+            } else {
+                return Err(SchemeError(format!(
+                    "Expected a symbol as the name, found {}",
+                    signature[0]
+                )));
+            }
         }
         Exp::Atom(val) => {
             if let Value::Symbol(symbol) = val {

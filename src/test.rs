@@ -25,8 +25,28 @@ mod integration_tests {
 
     #[test]
     fn test_let() {
-        let mut env = Rc::new(RefCell::new(Env::new()));
+        let result = evaluate_input("(let ((a 1)) a)").unwrap();
+        assert_eq!(result, Exp::Atom(Value::Number(Rational::from(1.0))));
+
         let result = evaluate_input("(let ((a 1) (b 2) (c (+ a b))) c)").unwrap();
         assert_eq!(result, Exp::Atom(Value::Number(Rational::from(3.0))));
+    }
+
+    #[test]
+    fn test_lambda() {
+        let result = evaluate_input("((lambda () 1))").unwrap();
+        assert_eq!(result, Exp::Atom(Value::Number(Rational::from(1.0))));
+
+        let result = evaluate_input("((lambda (a b) (+ a b)) 1 2)").unwrap();
+        assert_eq!(result, Exp::Atom(Value::Number(Rational::from(3.0))));
+    }
+
+    #[test]
+    fn test_define_fn() {
+        let result = evaluate_input("(define a (lambda () 1)) (a)").unwrap();
+        assert_eq!(result, Exp::Atom(Value::Number(Rational::from(1.0))));
+
+        let result = evaluate_input("(define (a) 1) (a)").unwrap();
+        assert_eq!(result, Exp::Atom(Value::Number(Rational::from(1.0))));
     }
 }
