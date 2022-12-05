@@ -77,9 +77,9 @@ mod integration_tests {
 
     #[test]
     fn test_comparisons() {
-        let result = evaluate_input("(eq? 1 1)").unwrap();
+        let result = evaluate_input("(= 1 1)").unwrap();
         assert_eq!(result, Exp::Atom(Value::Boolean(true)));
-        let result = evaluate_input("(eq? 1 0)").unwrap();
+        let result = evaluate_input("(= 1 0)").unwrap();
         assert_eq!(result, Exp::Atom(Value::Boolean(false)));
 
         let result = evaluate_input("(> 1 2)").unwrap();
@@ -105,9 +105,9 @@ mod integration_tests {
         let result = evaluate_input("(if false 0 1)").unwrap();
         assert_eq!(result, Exp::Atom(Value::Number(Rational::from(1.0))));
 
-        let result = evaluate_input("(if (eq? 1 1) 0 1)").unwrap();
+        let result = evaluate_input("(if (= 1 1) 0 1)").unwrap();
         assert_eq!(result, Exp::Atom(Value::Number(Rational::from(0.0))));
-        let result = evaluate_input("(if (eq? 1 0) 0 1)").unwrap();
+        let result = evaluate_input("(if (= 1 0) 0 1)").unwrap();
         assert_eq!(result, Exp::Atom(Value::Number(Rational::from(1.0))));
     }
 
