@@ -160,7 +160,7 @@ pub(crate) fn add(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
 
 pub(crate) fn sub(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
-    validate_num_args(&args, 1, 0)?;
+    validate_num_args(&args, 1, usize::MAX)?;
     let mut result;
     let first = args.get(0).unwrap();
 

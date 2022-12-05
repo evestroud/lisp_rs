@@ -18,7 +18,7 @@ pub(crate) fn validate_num_args<T>(args: &[T], min: usize, max: usize) -> Result
             args.len(),
         ))),
     }?;
-    if max > min {
+    if max < usize::MAX {
         match args.len() <= max {
             true => Ok(()),
             false => Err(SchemeError(format!(

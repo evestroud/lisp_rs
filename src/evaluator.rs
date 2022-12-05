@@ -17,7 +17,7 @@ pub(crate) fn eval_all(input: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp,
 pub(crate) fn evaluate(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     match input {
         Exp::List(list) => {
-            validate_num_args(&list, 1, 0)?;
+            validate_num_args(&list, 1, usize::MAX)?;
             let operator = evaluate(list.get(0).unwrap(), env)?;
             if let Exp::Atom(Value::SpecialForm(form)) = operator {
                 match form {
@@ -28,7 +28,7 @@ pub(crate) fn evaluate(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, S
                     SpecialForm::And => do_and_form(&list[1..], env),
                     SpecialForm::Or => do_or_form(&list[1..], env),
                     SpecialForm::Eval => {
-                        validate_num_args(&list, 1, 1)?;
+                        validate_num_args(&list[1..], 1, 1)?;
                         evaluate(&evaluate(list.get(1).unwrap(), env)?, env)
                     }
                     SpecialForm::Apply => {
@@ -80,7 +80,7 @@ fn do_define_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, Schem
     let second = &args[0];
     match second {
         Exp::List(signature) => {
-            validate_num_args(signature, 1, 0)?;
+            validate_num_args(signature, 1, usize::MAX)?;
             if let Value::Symbol(name) = signature.get(0).unwrap().unwrap_atom()? {
                 let params = Exp::List(signature[1..].to_vec());
                 let lambda_form_args = vec![&[params][..], &args[1..]].concat();
@@ -109,14 +109,14 @@ fn do_define_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, Schem
 }
 
 fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-    validate_num_args(args, 2, 0)?;
+    validate_num_args(args, 2, usize::MAX)?;
     let mut closure = create_closure(env.clone());
 
     match &args[0] {
         Exp::List(pairs) => {
             for pair in pairs {
                 if let Exp::List(pair_vec) = pair {
-                    validate_num_args(pair_vec, 2, 0)?;
+                    validate_num_args(pair_vec, 2, usize::MAX)?;
                     if let Value::Symbol(name) = pair_vec.get(0).unwrap().unwrap_atom()? {
                         let value = evaluate(pair_vec.get(1).unwrap(), &mut closure)?;
                         closure.borrow_mut().set(&name, &value);
@@ -136,7 +136,7 @@ fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeEr
 }
 
 fn do_lambda_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-    validate_num_args(args, 2, 0)?;
+    validate_num_args(args, 2, usize::MAX)?;
     let params = match &args[0] {
         Exp::List(param_list) => param_list
             .iter()
