@@ -134,4 +134,48 @@ mod integration_tests {
         let result = evaluate_input("(apply + '(1 1))").unwrap();
         assert_eq!(result, Exp::Atom(Value::Number(Rational::from(2.0))));
     }
+
+    #[test]
+    fn test_list_construction() {
+        let result = evaluate_input("(list)").unwrap();
+        assert_eq!(result, Exp::new_list());
+        let result = evaluate_input("(list 1 2 3)").unwrap();
+        assert_eq!(
+            result,
+            Exp::List(vec![
+                Exp::Atom(Value::Number(Rational::from(1.0))),
+                Exp::Atom(Value::Number(Rational::from(2.0))),
+                Exp::Atom(Value::Number(Rational::from(3.0)))
+            ])
+        );
+
+        let result = evaluate_input("(cons 1 '(2 3))").unwrap();
+        assert_eq!(
+            result,
+            Exp::List(vec![
+                Exp::Atom(Value::Number(Rational::from(1.0))),
+                Exp::Atom(Value::Number(Rational::from(2.0))),
+                Exp::Atom(Value::Number(Rational::from(3.0)))
+            ])
+        );
+    }
+
+    #[test]
+    fn test_list_access() {
+        let result = evaluate_input("(car '(1 2 3))").unwrap();
+        assert_eq!(result, Exp::Atom(Value::Number(Rational::from(1.0))));
+        let result = evaluate_input("(car '())").unwrap_err();
+        assert_eq!(result, SchemeError("car called on empty list".to_string()));
+
+        let result = evaluate_input("(cdr '(1 2 3))").unwrap();
+        assert_eq!(
+            result,
+            Exp::List(vec![
+                Exp::Atom(Value::Number(Rational::from(2.0))),
+                Exp::Atom(Value::Number(Rational::from(3.0)))
+            ])
+        );
+        let result = evaluate_input("(cdr '())").unwrap_err();
+        assert_eq!(result, SchemeError("cdr called on empty list".to_string()));
+    }
 }

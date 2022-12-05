@@ -85,6 +85,39 @@ pub(crate) fn builtins_map() -> HashMap<String, Exp> {
         ),
         /*
 
+            List operations
+
+        */
+        (
+            "list".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &list,
+                name: "list".to_string(),
+            }))),
+        ),
+        (
+            "cons".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &cons,
+                name: "cons".to_string(),
+            }))),
+        ),
+        (
+            "car".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &car,
+                name: "car".to_string(),
+            }))),
+        ),
+        (
+            "cdr".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &cdr,
+                name: "cdr".to_string(),
+            }))),
+        ),
+        /*
+
             Type checking
 
         */
@@ -103,10 +136,10 @@ pub(crate) fn builtins_map() -> HashMap<String, Exp> {
             }))),
         ),
         (
-            "nil?".to_string(),
+            "empty?".to_string(),
             Exp::Atom(Value::Function(Function::Builtin(Builtin {
-                func: &nil,
-                name: "nil?".to_string(),
+                func: &empty,
+                name: "empty?".to_string(),
             }))),
         ),
         (
@@ -273,8 +306,49 @@ pub(crate) fn lte(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
 }
 
 /*
- *    Type Checking
- */
+    List operations
+*/
+
+pub(crate) fn list(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
+    Ok(Exp::List(args.to_vec()))
+}
+
+pub(crate) fn cons(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
+    validate_num_args(&args, 2, 2)?;
+    let first = args.get(0).unwrap();
+    let mut rest = args.get(1).unwrap().unwrap_list()?;
+    rest.insert(0, first.clone());
+    Ok(Exp::List(rest))
+}
+
+pub(crate) fn car(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
+    validate_num_args(&args, 1, 1)?;
+    Ok(args
+        .get(0)
+        .unwrap()
+        .unwrap_list()?
+        .get(0)
+        .ok_or(SchemeError("car called on empty list".to_string()))?
+        .clone())
+}
+
+pub(crate) fn cdr(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
+    validate_num_args(&args, 1, 1)?;
+    let list = args.get(0).unwrap().unwrap_list()?;
+    match list.len() {
+        0 => Err(SchemeError("cdr called on empty list".to_string())),
+        1 => Ok(Exp::new_list()),
+        _ => Ok(Exp::List(args.get(0).unwrap().unwrap_list()?[1..].to_vec())),
+    }
+}
+
+/*
+   Type Checking
+*/
 
 pub(crate) fn number(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
@@ -296,7 +370,7 @@ pub(crate) fn symbol(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, Scheme
     }
 }
 
-pub(crate) fn nil(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+pub(crate) fn empty(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
     validate_num_args(&args, 1, 1)?;
     if args.get(0).unwrap().unwrap_list()?.len() == 0 {
