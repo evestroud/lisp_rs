@@ -3,7 +3,7 @@ use crate::tokenizer::Token;
 use std::collections::VecDeque;
 
 #[derive(Clone, Debug)]
-struct Buffer {
+pub(crate) struct Buffer {
     open_sexp: i32,
     tokens: VecDeque<Token>,
 }
