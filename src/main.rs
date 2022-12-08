@@ -1,5 +1,6 @@
 use crate::environment::Env;
 use crate::{evaluator::eval_all, parser::parse_all, tokenizer::tokenize};
+use buffer::Buffer;
 use rustyline::error::ReadlineError;
 use rustyline::{Editor, Result};
 use std::{cell::RefCell, rc::Rc};
@@ -25,24 +26,32 @@ fn main() -> Result<()> {
                 }
                 rl.add_history_entry(line.as_str());
 
-                match tokenize(&line) {
-                    Ok(mut tokens) => {
-                        // println!("{:?}", tokens);
-                        match parse_all(&mut tokens) {
-                            Ok(exp) => {
-                                // println!("{:?}", exp);
-                                match eval_all(&exp, &mut env) {
-                                    Ok(result) => {
-                                        println!("{}", result);
-                                    }
-                                    Err(e) => println!("Evaluation Error: {}", e),
-                                }
-                            }
-                            Err(e) => println!("Parse Error: {}", e),
-                        }
+                let mut buffer = Buffer::new();
+                while !buffer.expression_complete() {
+                    if let Err(e) = tokenize(&line, &mut buffer) {
+                        println!("Syntax Error: {}", e);
+                        continue;
                     }
-                    Err(e) => println!("Syntax Error: {}", e),
                 }
+
+                // match tokenize(&line) {
+                //     Ok(mut tokens) => {
+                //         // println!("{:?}", tokens);
+                //         match parse_all(&mut tokens) {
+                //             Ok(exp) => {
+                //                 // println!("{:?}", exp);
+                //                 match eval_all(&exp, &mut env) {
+                //                     Ok(result) => {
+                //                         println!("{}", result);
+                //                     }
+                //                     Err(e) => println!("Evaluation Error: {}", e),
+                //                 }
+                //             }
+                //             Err(e) => println!("Parse Error: {}", e),
+                //         }
+                //     }
+                // Err(e) => println!("Syntax Error: {}", e),
+                // }
             }
 
             // TODO - when multiline input is available - C-c clears buffer
