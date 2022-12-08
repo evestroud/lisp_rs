@@ -16,6 +16,18 @@ impl Buffer {
         }
     }
 
+    pub(crate) fn len(&self) -> usize {
+        self.tokens.len()
+    }
+
+    pub(crate) fn front(&self) -> Option<&Token> {
+        self.tokens.front()
+    }
+
+    pub(crate) fn pop_front(&mut self) -> Option<Token> {
+        self.tokens.pop_front()
+    }
+
     pub(crate) fn push(&mut self, token: Token) -> Result<(), SchemeError> {
         if token == Token::StartExp {
             self.open_sexp += 1;
