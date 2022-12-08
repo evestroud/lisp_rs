@@ -1,4 +1,5 @@
 use crate::{
+    buffer::Buffer,
     lib::SchemeError,
     types::{rational::Rational, SpecialForm, Value},
 };
@@ -12,8 +13,8 @@ pub(crate) enum Token {
     Literal(Value),
 }
 
-pub(crate) fn tokenize(input: &str) -> Result<VecDeque<Token>, SchemeError> {
-    input
+pub(crate) fn tokenize(input: &str, buffer: &mut Buffer) -> Result<(), SchemeError> {
+    for token in input
         .replace("(", " ( ")
         .replace(")", " ) ")
         .replace("[", " ( ")
@@ -28,7 +29,10 @@ pub(crate) fn tokenize(input: &str) -> Result<VecDeque<Token>, SchemeError> {
             "\"" => todo!(),
             _ => tokenize_symbol(token),
         })
-        .collect()
+    {
+        buffer.push(token?)?
+    }
+    Ok(())
 }
 
 fn tokenize_symbol(token: &str) -> Result<Token, SchemeError> {
