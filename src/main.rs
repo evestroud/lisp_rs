@@ -4,6 +4,7 @@ use rustyline::error::ReadlineError;
 use rustyline::{Editor, Result};
 use std::{cell::RefCell, rc::Rc};
 
+mod buffer;
 mod environment;
 mod evaluator;
 mod lib;

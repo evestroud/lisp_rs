@@ -4,7 +4,7 @@ use crate::{
 };
 use std::collections::VecDeque;
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub(crate) enum Token {
     StartExp,
     EndExp,
