@@ -22,8 +22,8 @@ pub(crate) fn tokenize(input: &str) -> Result<VecDeque<Token>, SchemeError> {
         .replace("\"", " \" ")
         .split_ascii_whitespace()
         .map(|token| match token {
-            "(" => Ok(Token::StartExp),
-            ")" => Ok(Token::EndExp),
+            "(" | "[" => Ok(Token::StartExp),
+            ")" | "]" => Ok(Token::EndExp),
             "'" => Ok(Token::Quote),
             "\"" => todo!(),
             _ => tokenize_str(token),
