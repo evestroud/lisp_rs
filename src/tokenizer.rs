@@ -26,12 +26,12 @@ pub(crate) fn tokenize(input: &str) -> Result<VecDeque<Token>, SchemeError> {
             ")" | "]" => Ok(Token::EndExp),
             "'" => Ok(Token::Quote),
             "\"" => todo!(),
-            _ => tokenize_str(token),
+            _ => tokenize_symbol(token),
         })
         .collect()
 }
 
-fn tokenize_str(token: &str) -> Result<Token, SchemeError> {
+fn tokenize_symbol(token: &str) -> Result<Token, SchemeError> {
     let special_forms = [
         "define", "let", "lambda", "if", "and", "or", "eval", "apply",
     ];
