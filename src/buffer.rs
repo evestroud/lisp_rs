@@ -1,5 +1,5 @@
 use crate::lib::SchemeError;
-use crate::tokenizer::Token;
+use crate::tokenizer::{tokenize, Token};
 use std::collections::VecDeque;
 
 #[derive(Clone, Debug)]
@@ -43,5 +43,15 @@ impl Buffer {
 
     pub(crate) fn expression_complete(&self) -> bool {
         self.open_sexp == 0 && self.tokens.len() > 0
+    }
+}
+
+impl From<&str> for Buffer {
+    fn from(s: &str) -> Self {
+        let mut b = Buffer::new();
+        match tokenize(&s, &mut b) {
+            Ok(_) => b,
+            Err(e) => panic!("Buffer::from failed: {}", e),
+        }
     }
 }
