@@ -3,7 +3,6 @@ use crate::{
     lib::SchemeError,
     types::{rational::Rational, SpecialForm, Value},
 };
-use std::collections::VecDeque;
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum Token {

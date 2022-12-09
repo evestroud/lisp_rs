@@ -1,4 +1,5 @@
 mod integration_tests {
+    use crate::buffer::Buffer;
     use crate::evaluator::eval_all;
     use crate::parser::parse_all;
     use crate::types::rational::Rational;
@@ -7,12 +8,12 @@ mod integration_tests {
     use std::cell::RefCell;
     use std::rc::Rc;
 
-    use crate::{environment::Env, tokenizer::tokenize};
+    use crate::environment::Env;
 
     fn evaluate_input(input: &str) -> Result<Exp, SchemeError> {
         let mut env = Rc::new(RefCell::new(Env::new()));
-        let mut tokens = tokenize(input)?;
-        let exp = parse_all(&mut tokens)?;
+        let mut buffer = Buffer::from(input);
+        let exp = parse_all(&mut buffer)?;
         eval_all(&exp, &mut env)
     }
 
@@ -20,8 +21,8 @@ mod integration_tests {
         input: &str,
         env: &mut Rc<RefCell<Env>>,
     ) -> Result<Exp, SchemeError> {
-        let mut tokens = tokenize(input)?;
-        let exp = parse_all(&mut tokens)?;
+        let mut buffer = Buffer::from(input);
+        let exp = parse_all(&mut buffer)?;
         eval_all(&exp, env)
     }
 

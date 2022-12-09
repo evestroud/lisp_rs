@@ -4,7 +4,6 @@ use crate::{
     tokenizer::Token,
     types::{Exp, Value},
 };
-use std::collections::VecDeque;
 
 pub(crate) fn parse_all(buffer: &mut Buffer) -> Result<Vec<Exp>, SchemeError> {
     let mut result = Vec::new();

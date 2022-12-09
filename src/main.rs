@@ -67,6 +67,7 @@ fn main() -> Result<()> {
             }
         }
         println!("{}", result);
+
         rl.save_history("history.txt")?;
     }
 }
