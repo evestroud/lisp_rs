@@ -17,53 +17,58 @@ fn main() -> Result<()> {
     let mut rl = Editor::<()>::new()?;
     let mut env = Rc::new(RefCell::new(Env::new()));
 
-    loop {
-        let readline = rl.readline("> ");
-        match readline {
-            Ok(line) => {
-                if line == "" {
-                    continue;
-                }
-                rl.add_history_entry(line.as_str());
-
-                let mut buffer = Buffer::new();
-                while !buffer.expression_complete() {
-                    if let Err(e) = tokenize(&line, &mut buffer) {
-                        println!("Syntax Error: {}", e);
+    'repl: loop {
+        let mut buffer = Buffer::new();
+        while !buffer.expression_complete() {
+            let readline = match buffer.len() {
+                0 => rl.readline("> "),
+                _ => rl.readline(". "),
+            };
+            match readline {
+                Ok(line) => {
+                    if line == "" {
                         continue;
                     }
+                    rl.add_history_entry(line.as_str());
+
+                    if let Err(e) = tokenize(&line, &mut buffer) {
+                        println!("Syntax Error: {}", e);
+                        break;
+                    }
+                    // println!("{:?}", buffer);
                 }
 
-                // match tokenize(&line) {
-                //     Ok(mut tokens) => {
-                //         // println!("{:?}", tokens);
-                //         match parse_all(&mut tokens) {
-                //             Ok(exp) => {
-                //                 // println!("{:?}", exp);
-                //                 match eval_all(&exp, &mut env) {
-                //                     Ok(result) => {
-                //                         println!("{}", result);
-                //                     }
-                //                     Err(e) => println!("Evaluation Error: {}", e),
-                //                 }
-                //             }
-                //             Err(e) => println!("Parse Error: {}", e),
-                //         }
-                //     }
-                // Err(e) => println!("Syntax Error: {}", e),
-                // }
-            }
-
-            // TODO - when multiline input is available - C-c clears buffer
-            Err(ReadlineError::Interrupted) => continue,
-            Err(ReadlineError::Eof) => break,
-            Err(err) => {
-                println!("Error: {:?}", err);
-                break;
+                Err(ReadlineError::Interrupted) => continue 'repl,
+                Err(ReadlineError::Eof) => break 'repl Ok(()),
+                Err(err) => {
+                    println!("Error: {:?}", err);
+                    continue 'repl;
+                }
             }
         }
+        // println!("{:?}", buffer);
+
+        let expression;
+        match parse_all(&mut buffer) {
+            Ok(exp) => expression = exp,
+            Err(e) => {
+                println!("Parse Error: {}", e);
+                continue;
+            }
+        }
+        // println!("{:?}", expression);
+
+        let result;
+        match eval_all(&expression, &mut env) {
+            Ok(res) => result = res,
+            Err(e) => {
+                println!("Runtime Error: {}", e);
+                continue;
+            }
+        }
+        println!("{}", result);
+        rl.save_history("history.txt")?;
     }
-    rl.save_history("history.txt")
 }
 
 #[cfg(test)]
