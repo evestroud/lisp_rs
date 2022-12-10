@@ -2,8 +2,10 @@ use crate::environment::Env;
 use crate::{evaluator::eval_all, parser::parse_all, tokenizer::tokenize};
 use buffer::Buffer;
 use rustyline::error::ReadlineError;
-use rustyline::{Editor, Result};
+use rustyline::Editor;
+use std::error::Error;
 use std::{cell::RefCell, rc::Rc};
+use std::{env, fs};
 
 mod buffer;
 mod environment;
@@ -13,9 +15,16 @@ mod parser;
 mod tokenizer;
 mod types;
 
-fn main() -> Result<()> {
-    let mut rl = Editor::<()>::new()?;
+fn main() -> Result<(), Box<dyn Error>> {
     let mut env = Rc::new(RefCell::new(Env::new()));
+
+    read_from_file(String::from("std.scm"), &mut env)?;
+
+    if let Some(f) = env::args().nth(1) {
+        read_from_file(f, &mut env)?;
+    }
+
+    let mut rl = Editor::<()>::new()?;
 
     'repl: loop {
         let mut buffer = Buffer::new();
@@ -56,7 +65,7 @@ fn main() -> Result<()> {
                 continue;
             }
         }
-        // println!("{:?}", expression);
+        println!("{:#?}", expression);
 
         let result;
         match eval_all(&expression, &mut env) {
@@ -70,6 +79,14 @@ fn main() -> Result<()> {
 
         rl.save_history("history.txt")?;
     }
+}
+
+fn read_from_file(f: String, env: &mut Rc<RefCell<Env>>) -> Result<(), Box<dyn Error>> {
+    let contents = fs::read_to_string(f)?;
+    let mut b = Buffer::from(contents.as_str());
+    let e = parse_all(&mut b)?;
+    eval_all(&e, env)?;
+    Ok(())
 }
 
 #[cfg(test)]
