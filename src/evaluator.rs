@@ -68,9 +68,10 @@ pub(crate) fn apply(
         let args = eval_args(args, env)?;
         function.call(&args, env)
     } else {
-        Err(SchemeError {
-            message: format!("Expected a function, found {}", operator),
-        })
+        Err(SchemeError::new(format!(
+            "Expected a function, found {}",
+            operator
+        )))
     }
 }
 
@@ -87,9 +88,10 @@ fn do_define_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, Schem
                 env.borrow_mut().set(&name, &lambda);
                 return Ok(Exp::new_list());
             } else {
-                return Err(SchemeError {
-                    message: format!("Expected a symbol as the name, found {}", signature[0]),
-                });
+                return Err(SchemeError::new(format!(
+                    "Expected a symbol as the name, found {}",
+                    signature[0]
+                )));
             }
         }
         Exp::Atom(val) => {
@@ -100,9 +102,10 @@ fn do_define_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, Schem
             }
         }
     }
-    Err(SchemeError {
-        message: format!("Expected a symbol as the name, found {}", second),
-    })
+    Err(SchemeError::new(format!(
+        "Expected a symbol as the name, found {}",
+        second
+    )))
 }
 
 fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
@@ -122,9 +125,9 @@ fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeEr
             }
         }
         Exp::Atom(_) => {
-            return Err(SchemeError {
-                message: "Let expects a list of definition".to_string(),
-            })
+            return Err(SchemeError::new(
+                "Let expects a list of definitions".to_string(),
+            ))
         }
     }
     eval_all(
@@ -145,9 +148,10 @@ fn do_lambda_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, Schem
                 let atom = arg.unwrap_atom()?;
                 match atom {
                     Value::Symbol(name) => Ok(name.to_string()),
-                    _ => Err(SchemeError {
-                        message: format!("Parameter list expects symbols, found {}", atom),
-                    }),
+                    _ => Err(SchemeError::new(format!(
+                        "Parameter list expects symbols, found {}",
+                        atom
+                    ))),
                 }
             })
             .collect::<Result<Vec<String>, SchemeError>>()?,
@@ -196,20 +200,20 @@ fn do_or_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
 pub(crate) fn validate_num_args<T>(args: &[T], min: usize, max: usize) -> Result<(), SchemeError> {
     match args.len() >= min {
         true => Ok(()),
-        false => Err(SchemeError {
-            message: format!("Expected at least {} args, found {}", min, args.len(),),
-        }),
+        false => Err(SchemeError::new(format!(
+            "Expected at least {} args, found {}",
+            min,
+            args.len(),
+        ))),
     }?;
     if max < usize::MAX {
         match args.len() <= max {
             true => Ok(()),
-            false => Err(SchemeError {
-                message: format!(
-                    "Procedure takes a maximum of {} args, found {}",
-                    max,
-                    args.len(),
-                ),
-            }),
+            false => Err(SchemeError::new(format!(
+                "Procedure takes a maximum of {} args, found {}",
+                max,
+                args.len(),
+            ))),
         }?;
     }
     Ok(())

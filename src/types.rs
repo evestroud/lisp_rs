@@ -19,9 +19,10 @@ pub(crate) enum Exp {
 impl Exp {
     pub(crate) fn unwrap_atom(&self) -> Result<Value, SchemeError> {
         match self {
-            Exp::List(_) => Err(SchemeError {
-                message: format!("Expected an atom, found {}", self),
-            }),
+            Exp::List(_) => Err(SchemeError::new(format!(
+                "Expected an atom, found {}",
+                self
+            ))),
             Exp::Atom(atom) => Ok(atom.clone()),
         }
     }
@@ -29,9 +30,7 @@ impl Exp {
     pub(crate) fn unwrap_list(&self) -> Result<Vec<Exp>, SchemeError> {
         match self {
             Exp::List(list) => Ok(list.clone()),
-            Exp::Atom(_) => Err(SchemeError {
-                message: format!("Expected a list, found {}", self),
-            }),
+            Exp::Atom(_) => Err(SchemeError::new(format!("Expected a list, found {}", self))),
         }
     }
 

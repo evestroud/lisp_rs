@@ -26,7 +26,7 @@ impl SchemeError {
         }
     }
 
-    pub(crate) fn from(message: String, e: &dyn Error) -> Self {
+    pub(crate) fn from(message: String, e: &'static dyn Error) -> Self {
         Self {
             message,
             source: Some(e),
