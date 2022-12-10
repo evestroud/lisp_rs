@@ -3,6 +3,7 @@ use std::{error::Error, fmt};
 #[derive(Debug)]
 pub(crate) struct SchemeError {
     pub(crate) message: String,
+    source: Option<&'static dyn Error>,
 }
 
 impl fmt::Display for SchemeError {
@@ -13,14 +14,22 @@ impl fmt::Display for SchemeError {
 
 impl Error for SchemeError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
-        None
+        self.source
+    }
+}
+
+impl SchemeError {
+    pub(crate) fn new(message: String) -> Self {
+        Self {
+            message,
+            source: None,
+        }
     }
 
-    fn description(&self) -> &str {
-        "description() is deprecated; use Display"
-    }
-
-    fn cause(&self) -> Option<&dyn Error> {
-        self.source()
+    pub(crate) fn from(message: String, e: &dyn Error) -> Self {
+        Self {
+            message,
+            source: Some(e),
+        }
     }
 }
