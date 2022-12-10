@@ -35,7 +35,9 @@ impl Buffer {
             self.open_sexp -= 1;
         }
         if self.open_sexp < 0 {
-            return Err(SchemeError("Unexpected closing delimiter".to_string()));
+            return Err(SchemeError {
+                message: "Unexpected closing delimiter".to_string(),
+            });
         }
         self.tokens.push_back(token);
         Ok(())

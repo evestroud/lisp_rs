@@ -45,9 +45,9 @@ fn tokenize_symbol(token: &str) -> Result<Token, SchemeError> {
             || (['.', '-'].contains(&c) && ![".", "-"].contains(&token))
         {
             Ok(Token::Literal(Value::Number(Rational::from(
-                token
-                    .parse::<f32>()
-                    .map_err(|_| SchemeError("Invalid number literal".to_string()))?,
+                token.parse::<f32>().map_err(|_| SchemeError {
+                    message: "Invalid number literal".to_string(),
+                })?,
             ))))
         } else if ["true", "#t"].contains(&token.to_ascii_lowercase().as_str()) {
             Ok(Token::Literal(Value::Boolean(true)))
@@ -59,6 +59,8 @@ fn tokenize_symbol(token: &str) -> Result<Token, SchemeError> {
             Ok(Token::Literal(Value::Symbol(token.to_string())))
         }
     } else {
-        Err(SchemeError("Tried to parse empty token".to_string()))
+        Err(SchemeError {
+            message: "Tried to parse empty token".to_string(),
+        })
     }
 }

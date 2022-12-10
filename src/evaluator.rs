@@ -68,10 +68,9 @@ pub(crate) fn apply(
         let args = eval_args(args, env)?;
         function.call(&args, env)
     } else {
-        Err(SchemeError(format!(
-            "Expected a function, found {}",
-            operator
-        )))
+        Err(SchemeError {
+            message: format!("Expected a function, found {}", operator),
+        })
     }
 }
 
@@ -88,10 +87,9 @@ fn do_define_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, Schem
                 env.borrow_mut().set(&name, &lambda);
                 return Ok(Exp::new_list());
             } else {
-                return Err(SchemeError(format!(
-                    "Expected a symbol as the name, found {}",
-                    signature[0]
-                )));
+                return Err(SchemeError {
+                    message: format!("Expected a symbol as the name, found {}", signature[0]),
+                });
             }
         }
         Exp::Atom(val) => {
@@ -102,10 +100,9 @@ fn do_define_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, Schem
             }
         }
     }
-    Err(SchemeError(format!(
-        "Expected a symbol as the name, found {}",
-        second
-    )))
+    Err(SchemeError {
+        message: format!("Expected a symbol as the name, found {}", second),
+    })
 }
 
 fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
@@ -124,7 +121,11 @@ fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeEr
                 }
             }
         }
-        Exp::Atom(_) => return Err(SchemeError("Let expects a list of definition".to_string())),
+        Exp::Atom(_) => {
+            return Err(SchemeError {
+                message: "Let expects a list of definition".to_string(),
+            })
+        }
     }
     eval_all(
         &args[1..]
@@ -144,10 +145,9 @@ fn do_lambda_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, Schem
                 let atom = arg.unwrap_atom()?;
                 match atom {
                     Value::Symbol(name) => Ok(name.to_string()),
-                    _ => Err(SchemeError(format!(
-                        "Parameter list expects symbols, found {}",
-                        atom
-                    ))),
+                    _ => Err(SchemeError {
+                        message: format!("Parameter list expects symbols, found {}", atom),
+                    }),
                 }
             })
             .collect::<Result<Vec<String>, SchemeError>>()?,

@@ -184,7 +184,9 @@ pub(crate) fn add(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
         if let Exp::Atom(Value::Number(num)) = item {
             result = result.add(&num);
         } else {
-            return Err(SchemeError(format!("Expected a number, found {:?}", item)));
+            return Err(SchemeError {
+                message: format!("Expected a number, found {:?}", item),
+            });
         }
     }
 
@@ -200,7 +202,9 @@ pub(crate) fn sub(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
     if let Exp::Atom(Value::Number(num)) = first {
         result = num.clone();
     } else {
-        return Err(SchemeError(format!("Expected a number, found {:?}", first)));
+        return Err(SchemeError {
+            message: format!("Expected a number, found {:?}", first),
+        });
     }
 
     if args.len() == 1 {
@@ -211,7 +215,9 @@ pub(crate) fn sub(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
         if let Exp::Atom(Value::Number(num)) = item {
             result = result.sub(&num.clone());
         } else {
-            return Err(SchemeError(format!("Expected a number, found {:?}", first)));
+            return Err(SchemeError {
+                message: format!("Expected a number, found {:?}", first),
+            });
         }
     }
 
@@ -225,7 +231,9 @@ pub(crate) fn mul(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
         if let Exp::Atom(Value::Number(num)) = item {
             result = result.mul(&num);
         } else {
-            return Err(SchemeError(format!("Expected a number, found {:?}", item)));
+            return Err(SchemeError {
+                message: format!("Expected a number, found {:?}", item),
+            });
         }
     }
 
@@ -240,10 +248,9 @@ pub(crate) fn div(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
     if let (Value::Number(n), Value::Number(d)) = (num.clone(), den.clone()) {
         Ok(Exp::Atom(Value::Number(n.div(&d))))
     } else {
-        Err(SchemeError(format!(
-            "Expected two numbers, found {} and {}",
-            num, den
-        )))
+        Err(SchemeError {
+            message: format!("Expected two numbers, found {} and {}", num, den),
+        })
     }
 }
 
@@ -265,7 +272,9 @@ pub(crate) fn gt(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErro
     {
         Ok(Exp::Atom(Value::Boolean(x.eval() > y.eval())))
     } else {
-        Err(SchemeError("> can only compare numbers".to_string()))
+        Err(SchemeError {
+            message: "> can only compare numbers".to_string(),
+        })
     }
 }
 
@@ -277,7 +286,9 @@ pub(crate) fn lt(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErro
     {
         Ok(Exp::Atom(Value::Boolean(x.eval() < y.eval())))
     } else {
-        Err(SchemeError("> can only compare numbers".to_string()))
+        Err(SchemeError {
+            message: "> can only compare numbers".to_string(),
+        })
     }
 }
 
@@ -289,7 +300,9 @@ pub(crate) fn gte(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
     {
         Ok(Exp::Atom(Value::Boolean(x.eval() >= y.eval())))
     } else {
-        Err(SchemeError("> can only compare numbers".to_string()))
+        Err(SchemeError {
+            message: "> can only compare numbers".to_string(),
+        })
     }
 }
 
@@ -301,7 +314,9 @@ pub(crate) fn lte(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
     {
         Ok(Exp::Atom(Value::Boolean(x.eval() <= y.eval())))
     } else {
-        Err(SchemeError("> can only compare numbers".to_string()))
+        Err(SchemeError {
+            message: "> can only compare numbers".to_string(),
+        })
     }
 }
 
@@ -331,7 +346,9 @@ pub(crate) fn car(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
         .unwrap()
         .unwrap_list()?
         .get(0)
-        .ok_or(SchemeError("car called on empty list".to_string()))?
+        .ok_or(SchemeError {
+            message: "car called on empty list".to_string(),
+        })?
         .clone())
 }
 
@@ -340,7 +357,9 @@ pub(crate) fn cdr(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
     validate_num_args(&args, 1, 1)?;
     let list = args.get(0).unwrap().unwrap_list()?;
     match list.len() {
-        0 => Err(SchemeError("cdr called on empty list".to_string())),
+        0 => Err(SchemeError {
+            message: "cdr called on empty list".to_string(),
+        }),
         1 => Ok(Exp::new_list()),
         _ => Ok(Exp::List(args.get(0).unwrap().unwrap_list()?[1..].to_vec())),
     }

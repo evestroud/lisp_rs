@@ -166,7 +166,12 @@ mod integration_tests {
         let result = evaluate_input("(car '(1 2 3))").unwrap();
         assert_eq!(result, Exp::Atom(Value::Number(Rational::from(1.0))));
         let result = evaluate_input("(car '())").unwrap_err();
-        assert_eq!(result, SchemeError("car called on empty list".to_string()));
+        assert_eq!(
+            result,
+            SchemeError {
+                message: "car called on empty list".to_string()
+            }
+        );
 
         let result = evaluate_input("(cdr '(1 2 3))").unwrap();
         assert_eq!(
@@ -177,6 +182,11 @@ mod integration_tests {
             ])
         );
         let result = evaluate_input("(cdr '())").unwrap_err();
-        assert_eq!(result, SchemeError("cdr called on empty list".to_string()));
+        assert_eq!(
+            result,
+            SchemeError {
+                message: "cdr called on empty list".to_string()
+            }
+        );
     }
 }

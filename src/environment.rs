@@ -27,7 +27,9 @@ impl Env {
                 return Ok(val.clone());
             }
         }
-        Err(SchemeError(format!("Name {} not found", name)))
+        Err(SchemeError {
+            message: format!("Name {} not found", name),
+        })
     }
 
     pub(crate) fn set(&mut self, name: &str, val: &Exp) {
