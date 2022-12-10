@@ -185,7 +185,7 @@ pub(crate) fn add(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
             result = result.add(&num);
         } else {
             return Err(SchemeError::new(format!(
-                "Expected a number, found {:?}",
+                "+ expects a number, found {:?}",
                 item
             )));
         }
@@ -196,7 +196,7 @@ pub(crate) fn add(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
 
 pub(crate) fn sub(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
-    validate_num_args(&args, 1, usize::MAX)?;
+    validate_num_args("-", &args, 1, usize::MAX)?;
     let mut result;
     let first = args.get(0).unwrap();
 
@@ -204,7 +204,7 @@ pub(crate) fn sub(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
         result = num.clone();
     } else {
         return Err(SchemeError::new(format!(
-            "Expected a number, found {:?}",
+            "- expects a number, found {:?}",
             first
         )));
     }
@@ -218,7 +218,7 @@ pub(crate) fn sub(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
             result = result.sub(&num.clone());
         } else {
             return Err(SchemeError::new(format!(
-                "Expected a number, found {:?}",
+                "- expects a number, found {:?}",
                 first
             )));
         }
@@ -235,7 +235,7 @@ pub(crate) fn mul(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
             result = result.mul(&num);
         } else {
             return Err(SchemeError::new(format!(
-                "Expected a number, found {:?}",
+                "* expects a number, found {:?}",
                 item
             )));
         }
@@ -246,14 +246,14 @@ pub(crate) fn mul(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
 
 pub(crate) fn div(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
-    validate_num_args(&args, 2, 2)?;
+    validate_num_args("/", &args, 2, 2)?;
     let num = args.get(0).unwrap().unwrap_atom()?;
     let den = args.get(1).unwrap().unwrap_atom()?;
     if let (Value::Number(n), Value::Number(d)) = (num.clone(), den.clone()) {
         Ok(Exp::Atom(Value::Number(n.div(&d))))
     } else {
         Err(SchemeError::new(format!(
-            "Expected two numbers, found {} and {}",
+            "/ expects two numbers, found {} and {}",
             num, den
         )))
     }
@@ -265,13 +265,13 @@ pub(crate) fn div(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
 
 pub(crate) fn eq(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
-    validate_num_args(&args, 2, 2)?;
+    validate_num_args("=", &args, 2, 2)?;
     Ok(Exp::Atom(Value::Boolean(args[0] == args[1])))
 }
 
 pub(crate) fn gt(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
-    validate_num_args(&args, 2, 2)?;
+    validate_num_args(">", &args, 2, 2)?;
     if let (Exp::Atom(Value::Number(x)), Exp::Atom(Value::Number(y))) =
         (args[0].clone(), args[1].clone())
     {
@@ -283,7 +283,7 @@ pub(crate) fn gt(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErro
 
 pub(crate) fn lt(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
-    validate_num_args(&args, 2, 2)?;
+    validate_num_args("<", &args, 2, 2)?;
     if let (Exp::Atom(Value::Number(x)), Exp::Atom(Value::Number(y))) =
         (args[0].clone(), args[1].clone())
     {
@@ -295,7 +295,7 @@ pub(crate) fn lt(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErro
 
 pub(crate) fn gte(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
-    validate_num_args(&args, 2, 2)?;
+    validate_num_args(">=", &args, 2, 2)?;
     if let (Exp::Atom(Value::Number(x)), Exp::Atom(Value::Number(y))) =
         (args[0].clone(), args[1].clone())
     {
@@ -307,7 +307,7 @@ pub(crate) fn gte(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
 
 pub(crate) fn lte(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
-    validate_num_args(&args, 2, 2)?;
+    validate_num_args("<=", &args, 2, 2)?;
     if let (Exp::Atom(Value::Number(x)), Exp::Atom(Value::Number(y))) =
         (args[0].clone(), args[1].clone())
     {
@@ -328,7 +328,7 @@ pub(crate) fn list(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeEr
 
 pub(crate) fn cons(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
-    validate_num_args(&args, 2, 2)?;
+    validate_num_args("cons", &args, 2, 2)?;
     let first = args.get(0).unwrap();
     let mut rest = args.get(1).unwrap().unwrap_list()?;
     rest.insert(0, first.clone());
@@ -337,7 +337,7 @@ pub(crate) fn cons(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeEr
 
 pub(crate) fn car(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
-    validate_num_args(&args, 1, 1)?;
+    validate_num_args("car", &args, 1, 1)?;
     Ok(args
         .get(0)
         .unwrap()
@@ -349,7 +349,7 @@ pub(crate) fn car(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
 
 pub(crate) fn cdr(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
-    validate_num_args(&args, 1, 1)?;
+    validate_num_args("cdr", &args, 1, 1)?;
     let list = args.get(0).unwrap().unwrap_list()?;
     match list.len() {
         0 => Err(SchemeError::new("cdr called on empty list".to_string())),
@@ -364,7 +364,7 @@ pub(crate) fn cdr(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
 
 pub(crate) fn number(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
-    validate_num_args(&args, 1, 1)?;
+    validate_num_args("number?", &args, 1, 1)?;
     if let Value::Number(_) = args.get(0).unwrap().unwrap_atom()? {
         Ok(Exp::Atom(Value::Boolean(true)))
     } else {
@@ -374,7 +374,7 @@ pub(crate) fn number(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, Scheme
 
 pub(crate) fn symbol(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
-    validate_num_args(&args, 1, 1)?;
+    validate_num_args("symbol?", &args, 1, 1)?;
     if let Value::Symbol(_) = args.get(0).unwrap().unwrap_atom()? {
         Ok(Exp::Atom(Value::Boolean(true)))
     } else {
@@ -384,7 +384,7 @@ pub(crate) fn symbol(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, Scheme
 
 pub(crate) fn empty(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
-    validate_num_args(&args, 1, 1)?;
+    validate_num_args("empty?", &args, 1, 1)?;
     if args.get(0).unwrap().unwrap_list()?.len() == 0 {
         Ok(Exp::Atom(Value::Boolean(true)))
     } else {
@@ -394,7 +394,7 @@ pub(crate) fn empty(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeE
 
 pub(crate) fn function(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
-    validate_num_args(&args, 1, 1)?;
+    validate_num_args("function?", &args, 1, 1)?;
     if let Value::Function(_) = args.get(0).unwrap().unwrap_atom()? {
         Ok(Exp::Atom(Value::Boolean(true)))
     } else {
@@ -404,7 +404,7 @@ pub(crate) fn function(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, Sche
 
 pub(crate) fn special_form(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
-    validate_num_args(&args, 1, 1)?;
+    validate_num_args("special_form?", &args, 1, 1)?;
     if let Value::SpecialForm(_) = args.get(0).unwrap().unwrap_atom()? {
         Ok(Exp::Atom(Value::Boolean(true)))
     } else {
@@ -414,7 +414,7 @@ pub(crate) fn special_form(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, 
 
 pub(crate) fn quote(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
-    validate_num_args(&args, 1, 1)?;
+    validate_num_args("quote?", &args, 1, 1)?;
     if let Value::Quote(_) = args.get(0).unwrap().unwrap_atom()? {
         Ok(Exp::Atom(Value::Boolean(true)))
     } else {
@@ -424,7 +424,7 @@ pub(crate) fn quote(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeE
 
 pub(crate) fn boolean(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
-    validate_num_args(&args, 1, 1)?;
+    validate_num_args("boolean?", &args, 1, 1)?;
     if let Value::Boolean(_) = args.get(0).unwrap().unwrap_atom()? {
         Ok(Exp::Atom(Value::Boolean(true)))
     } else {

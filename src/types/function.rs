@@ -90,12 +90,28 @@ pub(crate) struct Lambda {
 impl Lambda {
     pub(crate) fn eval(&mut self, args: &Exp) -> Result<Exp, SchemeError> {
         let args = args.unwrap_list()?;
-        validate_num_args(&args, self.params.len(), self.params.len())?;
+        validate_num_args(
+            &self.params_to_string(),
+            &args,
+            self.params.len(),
+            self.params.len(),
+        )?;
         for (name, val) in self.params.iter().zip(args) {
             self.env.borrow_mut().set(name, &val);
         }
 
         eval_all(&self.body, &mut self.env)
+    }
+
+    fn params_to_string(&self) -> String {
+        format!(
+            "({})",
+            self.params
+                .iter()
+                .map(|s| s.as_str())
+                .collect::<Vec<&str>>()
+                .join(" ")
+        )
     }
 }
 
