@@ -7,4 +7,5 @@
   (if (empty? ls)
     '()
     (if (fn (car ls))
-      (cons (car ls) (filter fn (cdr ls))))))
+      (cons (car ls) (filter fn (cdr ls)))
+      (filter fn (cdr ls)))))
