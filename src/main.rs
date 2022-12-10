@@ -9,8 +9,8 @@ use std::{env, fs};
 
 mod buffer;
 mod environment;
+mod error;
 mod evaluator;
-mod lib;
 mod parser;
 mod tokenizer;
 mod types;
@@ -65,7 +65,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 continue;
             }
         }
-        println!("{:#?}", expression);
+        // println!("{:#?}", expression);
 
         let result;
         match eval_all(&expression, &mut env) {

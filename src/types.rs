@@ -1,5 +1,5 @@
 use self::{function::Function, rational::Rational};
-use crate::lib::SchemeError;
+use crate::error::SchemeError;
 use std::fmt::{self, Display};
 
 pub(crate) mod default_env;

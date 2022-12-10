@@ -1,5 +1,5 @@
 use crate::{
-    lib::validate_num_args,
+    evaluator::validate_num_args,
     types::{
         function::{Builtin, Function},
         Exp, Rational, SchemeError, Value,

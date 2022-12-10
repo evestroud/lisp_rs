@@ -1,7 +1,7 @@
 use crate::{
     environment::Env,
     eval_all,
-    lib::validate_num_args,
+    evaluator::validate_num_args,
     types::{Exp, SchemeError},
 };
 use std::fmt::Debug;

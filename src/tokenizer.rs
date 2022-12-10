@@ -1,6 +1,6 @@
 use crate::{
     buffer::Buffer,
-    lib::SchemeError,
+    error::SchemeError,
     types::{rational::Rational, SpecialForm, Value},
 };
 

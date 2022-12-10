@@ -4,7 +4,7 @@ mod integration_tests {
     use crate::parser::parse_all;
     use crate::types::rational::Rational;
     use crate::types::Exp;
-    use crate::{lib::SchemeError, types::Value};
+    use crate::{error::SchemeError, types::Value};
     use std::cell::RefCell;
     use std::rc::Rc;
 

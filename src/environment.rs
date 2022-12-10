@@ -1,5 +1,5 @@
 use crate::{
-    lib::SchemeError,
+    error::SchemeError,
     types::{default_env::builtins_map, Exp},
 };
 use std::{cell::RefCell, collections::HashMap, rc::Rc};

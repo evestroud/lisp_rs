@@ -1,6 +1,6 @@
 use crate::{
     environment::{create_closure, Env},
-    lib::{validate_num_args, SchemeError},
+    error::SchemeError,
     types::function::{Function, Lambda},
     types::{Exp, SpecialForm, Value},
 };
@@ -191,4 +191,26 @@ fn do_or_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
         }
     }
     Ok(Exp::Atom(val))
+}
+
+pub(crate) fn validate_num_args<T>(args: &[T], min: usize, max: usize) -> Result<(), SchemeError> {
+    match args.len() >= min {
+        true => Ok(()),
+        false => Err(SchemeError {
+            message: format!("Expected at least {} args, found {}", min, args.len(),),
+        }),
+    }?;
+    if max < usize::MAX {
+        match args.len() <= max {
+            true => Ok(()),
+            false => Err(SchemeError {
+                message: format!(
+                    "Procedure takes a maximum of {} args, found {}",
+                    max,
+                    args.len(),
+                ),
+            }),
+        }?;
+    }
+    Ok(())
 }

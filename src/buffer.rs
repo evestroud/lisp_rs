@@ -1,4 +1,4 @@
-use crate::lib::SchemeError;
+use crate::error::SchemeError;
 use crate::tokenizer::{tokenize, Token};
 use std::collections::VecDeque;
 
