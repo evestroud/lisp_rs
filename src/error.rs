@@ -1,6 +1,6 @@
 use std::{error::Error, fmt};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug)]
 pub(crate) struct SchemeError {
     pub(crate) message: String,
 }
