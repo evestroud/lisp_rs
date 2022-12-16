@@ -224,3 +224,7 @@ pub(crate) fn validate_num_args<T>(
     }
     Ok(())
 }
+
+// pub(crate) fn validate_type<T>(arg: Exp) -> Result<(), SchemeError> {
+//     match T {}
+// }

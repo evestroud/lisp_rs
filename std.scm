@@ -9,3 +9,8 @@
     (if (fn (car ls))
       (cons (car ls) (filter fn (cdr ls)))
       (filter fn (cdr ls)))))
+
+(define (reduce fn ls)
+  (if (empty? (cdr ls))
+    (car ls)
+    (fn (car ls) (reduce fn (cdr ls)))))
