@@ -13,24 +13,32 @@ pub(crate) mod rational;
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum Exp {
     List(Vec<Exp>),
+    Pair(Box<Exp>, Box<Exp>),
     Atom(Value),
 }
 
 impl Exp {
     pub(crate) fn unwrap_atom(&self) -> Result<Value, SchemeError> {
         match self {
-            Exp::List(_) => Err(SchemeError::new(format!(
+            Exp::Atom(atom) => Ok(atom.clone()),
+            _ => Err(SchemeError::new(format!(
                 "Expected an atom, found {}",
                 self
             ))),
-            Exp::Atom(atom) => Ok(atom.clone()),
         }
     }
 
     pub(crate) fn unwrap_list(&self) -> Result<Vec<Exp>, SchemeError> {
         match self {
             Exp::List(list) => Ok(list.clone()),
-            Exp::Atom(_) => Err(SchemeError::new(format!("Expected a list, found {}", self))),
+            _ => Err(SchemeError::new(format!("Expected a list, found {}", self))),
+        }
+    }
+
+    pub(crate) fn unwrap_pair(&self) -> Result<(Exp, Exp), SchemeError> {
+        match self {
+            Exp::Pair(first, rest) => Ok((*first.clone(), *rest.clone())),
+            _ => Err(SchemeError::new(format!("Expected a pair, found {}", self))),
         }
     }
 
@@ -52,6 +60,7 @@ impl Display for Exp {
                         .as_str()
                     + ")"
             }
+            Exp::Pair(first, rest) => format!("({} . {})", first.to_string(), rest.to_string()),
             Exp::Atom(atom) => atom.to_string(),
         };
         write!(f, "{}", string)
