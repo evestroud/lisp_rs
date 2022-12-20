@@ -6,12 +6,18 @@ use crate::{
 };
 use std::{cell::RefCell, rc::Rc};
 
-pub(crate) fn eval_all(input: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+pub(crate) fn eval_all(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let mut result = Exp::List(Vec::new());
-    for exp in input {
-        result = evaluate(exp, env)?;
+    if let Exp::List(statements) = input {
+        for exp in statements {
+            result = evaluate(exp, env)?;
+        }
+        Ok(result)
+    } else {
+        Err(SchemeError::new(
+            "eval-all called on a non-list".to_string(),
+        ))
     }
-    Ok(result)
 }
 
 pub(crate) fn evaluate(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
@@ -21,12 +27,12 @@ pub(crate) fn evaluate(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, S
             let operator = evaluate(list.get(0).unwrap(), env)?;
             if let Exp::Atom(Value::SpecialForm(form)) = operator {
                 match form {
-                    SpecialForm::Define => do_define_form(&list[1..], env),
-                    SpecialForm::Let => do_let_form(&list[1..], env),
-                    SpecialForm::Lambda => do_lambda_form(&list[1..], env),
-                    SpecialForm::If => do_if_form(&list[1..], env),
-                    SpecialForm::And => do_and_form(&list[1..], env),
-                    SpecialForm::Or => do_or_form(&list[1..], env),
+                    SpecialForm::Define => do_define_form(&Exp::from(&list[1..]), env),
+                    SpecialForm::Let => do_let_form(&Exp::from(&list[1..]), env),
+                    SpecialForm::Lambda => do_lambda_form(&Exp::from(&list[1..]), env),
+                    SpecialForm::If => do_if_form(&Exp::from(&list[1..]), env),
+                    SpecialForm::And => do_and_form(&Exp::from(&list[1..]), env),
+                    SpecialForm::Or => do_or_form(&Exp::from(&list[1..]), env),
                     SpecialForm::Eval => {
                         validate_num_args("eval", &list[1..], 1, 1)?;
                         evaluate(&evaluate(list.get(1).unwrap(), env)?, env)
@@ -75,40 +81,47 @@ pub(crate) fn apply(
     }
 }
 
-fn do_define_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-    validate_num_args("define", args, 2, 2)?;
-    let second = &args[0];
-    match second {
-        Exp::List(signature) => {
-            validate_num_args("define signature", signature, 1, usize::MAX)?;
-            if let Value::Symbol(name) = signature.get(0).unwrap().unwrap_atom()? {
-                let params = Exp::List(signature[1..].to_vec());
-                let lambda_form_args = vec![&[params][..], &args[1..]].concat();
-                let lambda = do_lambda_form(lambda_form_args.as_slice(), env)?;
-                env.borrow_mut().set(&name, &lambda);
-                return Ok(Exp::new_list());
-            } else {
-                return Err(SchemeError::new(format!(
-                    "Expected a symbol as the name, found {}",
-                    signature[0]
-                )));
+fn do_define_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    if let Exp::List(args) = args {
+        validate_num_args("define", args, 2, 2)?;
+        let second = &args[0];
+        match second {
+            Exp::List(signature) => {
+                validate_num_args("define signature", signature, 1, usize::MAX)?;
+                if let Value::Symbol(name) = signature.get(0).unwrap().unwrap_atom()? {
+                    let params = Exp::List(signature[1..].to_vec());
+                    let lambda_form_args = vec![&[params][..], &args[1..]].concat();
+                    let lambda = do_lambda_form(lambda_form_args.as_slice(), env)?;
+                    env.borrow_mut().set(&name, &lambda);
+                    return Ok(Exp::new_list());
+                } else {
+                    return Err(SchemeError::new(format!(
+                        "Expected a symbol as the name, found {}",
+                        signature[0]
+                    )));
+                }
+            }
+            Exp::Atom(val) => {
+                if let Value::Symbol(symbol) = val {
+                    let third = evaluate(&args[1], env)?;
+                    env.borrow_mut().set(&symbol, &third);
+                    return Ok(Exp::new_list());
+                }
             }
         }
-        Exp::Atom(val) => {
-            if let Value::Symbol(symbol) = val {
-                let third = evaluate(&args[1], env)?;
-                env.borrow_mut().set(&symbol, &third);
-                return Ok(Exp::new_list());
-            }
-        }
+        Err(SchemeError::new(format!(
+            "Expected a symbol as the name, found {}",
+            second
+        )))
+    } else {
+        Err(SchemeError::new(format!(
+            "define expects a list, found {}",
+            args
+        )))
     }
-    Err(SchemeError::new(format!(
-        "Expected a symbol as the name, found {}",
-        second
-    )))
 }
 
-fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+fn do_let_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     validate_num_args("let", args, 2, usize::MAX)?;
     let mut closure = create_closure(env.clone());
 
@@ -139,7 +152,7 @@ fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeEr
     )
 }
 
-fn do_lambda_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+fn do_lambda_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     validate_num_args("lambda", args, 2, usize::MAX)?;
     let params = match &args[0] {
         Exp::List(param_list) => param_list
@@ -166,7 +179,7 @@ fn do_lambda_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, Schem
     }))))
 }
 
-fn do_if_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+fn do_if_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     validate_num_args("if", args, 3, 3)?;
     let condition = evaluate(&args[0], env)?.unwrap_atom()?;
     if let Value::Boolean(false) = condition {
@@ -175,7 +188,7 @@ fn do_if_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
     evaluate(&args[1], env)
 }
 
-fn do_and_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+fn do_and_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let mut val = Value::Boolean(true);
     for a in args {
         val = evaluate(a, env)?.unwrap_atom()?;
@@ -186,7 +199,7 @@ fn do_and_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeEr
     Ok(Exp::Atom(val))
 }
 
-fn do_or_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+fn do_or_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let mut val = Value::Boolean(false);
     for a in args {
         val = evaluate(a, env)?.unwrap_atom()?;
