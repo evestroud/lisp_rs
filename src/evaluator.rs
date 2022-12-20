@@ -76,7 +76,7 @@ pub(crate) fn apply(
 }
 
 fn do_define_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-    validate_num_args("define", args, 2, 2)?;
+    validate_num_args("define", args, 1, usize::MAX)?;
     let second = &args[0];
     match second {
         Exp::List(signature) => {
@@ -95,6 +95,7 @@ fn do_define_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, Schem
             }
         }
         Exp::Atom(val) => {
+            validate_num_args("define value", args, 2, 2)?;
             if let Value::Symbol(symbol) = val {
                 let third = evaluate(&args[1], env)?;
                 env.borrow_mut().set(&symbol, &third);
@@ -216,7 +217,8 @@ pub(crate) fn validate_num_args<T>(
         match args.len() <= max {
             true => Ok(()),
             false => Err(SchemeError::new(format!(
-                "Procedure takes a maximum of {} args, found {}",
+                "{} takes a maximum of {} args, found {}",
+                name,
                 max,
                 args.len(),
             ))),
