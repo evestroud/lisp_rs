@@ -117,7 +117,8 @@ fn do_define_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeE
 }
 
 fn do_let_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-    validate_num_args("let", args, 2, usize::MAX)?;
+    let args = args.unwrap_list()?;
+    validate_num_args("let", &args, 2, usize::MAX)?;
     let mut closure = create_closure(env.clone());
 
     match &args[0] {
@@ -138,13 +139,7 @@ fn do_let_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErro
             ))
         }
     }
-    eval_all(
-        &args[1..]
-            .iter()
-            .map(|arg| arg.clone())
-            .collect::<Vec<Exp>>(),
-        &mut closure,
-    )
+    eval_all(&args[1..], &mut closure)
 }
 
 fn do_lambda_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
