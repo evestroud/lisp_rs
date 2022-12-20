@@ -82,44 +82,38 @@ pub(crate) fn apply(
 }
 
 fn do_define_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-    validate_num_args("define", args, 1, usize::MAX)?;
-    if let Exp::List(args) = args {
-        let second = &args[0];
-        match second {
-            Exp::List(signature) => {
-                validate_num_args("define signature", signature, 1, usize::MAX)?;
-                if let Value::Symbol(name) = signature.get(0).unwrap().unwrap_atom()? {
-                    let params = Exp::List(signature[1..].to_vec());
-                    let lambda_form_args = vec![&[params][..], &args[1..]].concat();
-                    let lambda = do_lambda_form(lambda_form_args.as_slice(), env)?;
-                    env.borrow_mut().set(&name, &lambda);
-                    return Ok(Exp::new_list());
-                } else {
-                    return Err(SchemeError::new(format!(
-                        "Expected a symbol as the name, found {}",
-                        signature[0]
-                    )));
-                }
-            }
-            Exp::Atom(val) => {
-                validate_num_args("define value", args, 2, 2)?;
-                if let Value::Symbol(symbol) = val {
-                    let third = evaluate(&args[1], env)?;
-                    env.borrow_mut().set(&symbol, &third);
-                    return Ok(Exp::new_list());
-                }
+    let args = args.unwrap_list()?;
+    validate_num_args("define", &args, 1, usize::MAX)?;
+    let second = &args[0];
+    match second {
+        Exp::List(signature) => {
+            validate_num_args("define signature", signature, 1, usize::MAX)?;
+            if let Value::Symbol(name) = signature.get(0).unwrap().unwrap_atom()? {
+                let params = Exp::List(signature[1..].to_vec());
+                let lambda_form_args = Exp::from(&vec![&[params][..], &args[1..]].concat()[..]);
+                let lambda = do_lambda_form(&lambda_form_args, env)?;
+                env.borrow_mut().set(&name, &lambda);
+                return Ok(Exp::new_list());
+            } else {
+                return Err(SchemeError::new(format!(
+                    "Expected a symbol as the name, found {}",
+                    signature[0]
+                )));
             }
         }
-        Err(SchemeError::new(format!(
-            "Expected a symbol as the name, found {}",
-            second
-        )))
-    } else {
-        Err(SchemeError::new(format!(
-            "define expects a list, found {}",
-            args
-        )))
+        Exp::Atom(val) => {
+            validate_num_args("define value", &args, 2, 2)?;
+            if let Value::Symbol(symbol) = val {
+                let third = evaluate(&args[1], env)?;
+                env.borrow_mut().set(&symbol, &third);
+                return Ok(Exp::new_list());
+            }
+        }
     }
+    Err(SchemeError::new(format!(
+        "Expected a symbol as the name, found {}",
+        second
+    )))
 }
 
 fn do_let_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
