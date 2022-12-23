@@ -21,12 +21,12 @@ pub(crate) fn evaluate(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, S
             let operator = evaluate(list.get(0).unwrap(), env)?;
             if let Exp::Atom(Value::SpecialForm(form)) = operator {
                 match form {
-                    SpecialForm::Define => do_define_form(&list[1..], env),
-                    SpecialForm::Let => do_let_form(&list[1..], env),
-                    SpecialForm::Lambda => do_lambda_form(&list[1..], env),
-                    SpecialForm::If => do_if_form(&list[1..], env),
-                    SpecialForm::And => do_and_form(&list[1..], env),
-                    SpecialForm::Or => do_or_form(&list[1..], env),
+                    SpecialForm::Define => do_define_form(&Exp::from(&list[1..]), env),
+                    SpecialForm::Let => do_let_form(&Exp::from(&list[1..]), env),
+                    SpecialForm::Lambda => do_lambda_form(&Exp::from(&list[1..]), env),
+                    SpecialForm::If => do_if_form(&Exp::from(&list[1..]), env),
+                    SpecialForm::And => do_and_form(&Exp::from(&list[1..]), env),
+                    SpecialForm::Or => do_or_form(&Exp::from(&list[1..]), env),
                     SpecialForm::Eval => {
                         validate_num_args("eval", &list[1..], 1, 1)?;
                         evaluate(&evaluate(list.get(1).unwrap(), env)?, env)
@@ -75,16 +75,17 @@ pub(crate) fn apply(
     }
 }
 
-fn do_define_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-    validate_num_args("define", args, 2, 2)?;
+fn do_define_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
+    validate_num_args("define", &args, 1, usize::MAX)?;
     let second = &args[0];
     match second {
         Exp::List(signature) => {
             validate_num_args("define signature", signature, 1, usize::MAX)?;
             if let Value::Symbol(name) = signature.get(0).unwrap().unwrap_atom()? {
                 let params = Exp::List(signature[1..].to_vec());
-                let lambda_form_args = vec![&[params][..], &args[1..]].concat();
-                let lambda = do_lambda_form(lambda_form_args.as_slice(), env)?;
+                let lambda_form_args = Exp::from(&vec![&[params][..], &args[1..]].concat()[..]);
+                let lambda = do_lambda_form(&lambda_form_args, env)?;
                 env.borrow_mut().set(&name, &lambda);
                 return Ok(Exp::new_list());
             } else {
@@ -95,6 +96,7 @@ fn do_define_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, Schem
             }
         }
         Exp::Atom(val) => {
+            validate_num_args("define value", &args, 2, 2)?;
             if let Value::Symbol(symbol) = val {
                 let third = evaluate(&args[1], env)?;
                 env.borrow_mut().set(&symbol, &third);
@@ -108,8 +110,9 @@ fn do_define_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, Schem
     )))
 }
 
-fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-    validate_num_args("let", args, 2, usize::MAX)?;
+fn do_let_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
+    validate_num_args("let", &args, 2, usize::MAX)?;
     let mut closure = create_closure(env.clone());
 
     match &args[0] {
@@ -130,17 +133,12 @@ fn do_let_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeEr
             ))
         }
     }
-    eval_all(
-        &args[1..]
-            .iter()
-            .map(|arg| arg.clone())
-            .collect::<Vec<Exp>>(),
-        &mut closure,
-    )
+    eval_all(&args[1..], &mut closure)
 }
 
-fn do_lambda_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-    validate_num_args("lambda", args, 2, usize::MAX)?;
+fn do_lambda_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
+    validate_num_args("lambda", &args, 2, usize::MAX)?;
     let params = match &args[0] {
         Exp::List(param_list) => param_list
             .iter()
@@ -166,8 +164,9 @@ fn do_lambda_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, Schem
     }))))
 }
 
-fn do_if_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-    validate_num_args("if", args, 3, 3)?;
+fn do_if_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
+    validate_num_args("if", &args, 3, 3)?;
     let condition = evaluate(&args[0], env)?.unwrap_atom()?;
     if let Value::Boolean(false) = condition {
         return evaluate(&args[2], env);
@@ -175,10 +174,11 @@ fn do_if_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
     evaluate(&args[1], env)
 }
 
-fn do_and_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+fn do_and_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
     let mut val = Value::Boolean(true);
     for a in args {
-        val = evaluate(a, env)?.unwrap_atom()?;
+        val = evaluate(&a, env)?.unwrap_atom()?;
         if val == Value::Boolean(false) {
             break;
         }
@@ -186,10 +186,11 @@ fn do_and_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeEr
     Ok(Exp::Atom(val))
 }
 
-fn do_or_form(args: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+fn do_or_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
     let mut val = Value::Boolean(false);
     for a in args {
-        val = evaluate(a, env)?.unwrap_atom()?;
+        val = evaluate(&a, env)?.unwrap_atom()?;
         if val != Value::Boolean(false) {
             break;
         }
@@ -216,7 +217,8 @@ pub(crate) fn validate_num_args<T>(
         match args.len() <= max {
             true => Ok(()),
             false => Err(SchemeError::new(format!(
-                "Procedure takes a maximum of {} args, found {}",
+                "{} takes a maximum of {} args, found {}",
+                name,
                 max,
                 args.len(),
             ))),
