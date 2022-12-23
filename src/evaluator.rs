@@ -143,7 +143,8 @@ fn do_let_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErro
 }
 
 fn do_lambda_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-    validate_num_args("lambda", args, 2, usize::MAX)?;
+    let args = args.unwrap_list()?;
+    validate_num_args("lambda", &args, 2, usize::MAX)?;
     let params = match &args[0] {
         Exp::List(param_list) => param_list
             .iter()
@@ -170,7 +171,8 @@ fn do_lambda_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeE
 }
 
 fn do_if_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
-    validate_num_args("if", args, 3, 3)?;
+    let args = args.unwrap_list()?;
+    validate_num_args("if", &args, 3, 3)?;
     let condition = evaluate(&args[0], env)?.unwrap_atom()?;
     if let Value::Boolean(false) = condition {
         return evaluate(&args[2], env);
@@ -179,9 +181,10 @@ fn do_if_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError
 }
 
 fn do_and_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
     let mut val = Value::Boolean(true);
     for a in args {
-        val = evaluate(a, env)?.unwrap_atom()?;
+        val = evaluate(&a, env)?.unwrap_atom()?;
         if val == Value::Boolean(false) {
             break;
         }
@@ -190,9 +193,10 @@ fn do_and_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErro
 }
 
 fn do_or_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
     let mut val = Value::Boolean(false);
     for a in args {
-        val = evaluate(a, env)?.unwrap_atom()?;
+        val = evaluate(&a, env)?.unwrap_atom()?;
         if val != Value::Boolean(false) {
             break;
         }
