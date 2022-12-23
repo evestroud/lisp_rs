@@ -6,18 +6,12 @@ use crate::{
 };
 use std::{cell::RefCell, rc::Rc};
 
-pub(crate) fn eval_all(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+pub(crate) fn eval_all(input: &[Exp], env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let mut result = Exp::List(Vec::new());
-    if let Exp::List(statements) = input {
-        for exp in statements {
-            result = evaluate(exp, env)?;
-        }
-        Ok(result)
-    } else {
-        Err(SchemeError::new(
-            "eval-all called on a non-list".to_string(),
-        ))
+    for exp in input {
+        result = evaluate(exp, env)?;
     }
+    Ok(result)
 }
 
 pub(crate) fn evaluate(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
