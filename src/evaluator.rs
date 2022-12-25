@@ -147,19 +147,7 @@ fn do_lambda_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeE
     let args = args.unwrap_list()?;
     validate_num_args("lambda", &args, 2, usize::MAX)?;
     let params = match &args[0] {
-        Exp::List(param_list) => param_list
-            .iter()
-            .map(|arg| {
-                let atom = arg.unwrap_atom()?;
-                match atom {
-                    Value::Symbol(name) => Ok(name.to_string()),
-                    _ => Err(SchemeError::new(format!(
-                        "Parameter list expects symbols, found {}",
-                        atom
-                    ))),
-                }
-            })
-            .collect::<Result<Vec<String>, SchemeError>>()?,
+        Exp::List(param_list) => eval_param_list(param_list)?,
         Exp::Pair(_, _) => todo!(),
         Exp::Atom(_) => todo!(), // treat as vararg?? seems to be what guile does
     };
@@ -170,6 +158,22 @@ fn do_lambda_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeE
         body,
         env,
     }))))
+}
+
+fn eval_param_list(param_list: &Vec<Exp>) -> Result<Vec<String>, SchemeError> {
+    Ok(param_list
+        .iter()
+        .map(|arg| {
+            let atom = arg.unwrap_atom()?;
+            match atom {
+                Value::Symbol(name) => Ok(name.to_string()),
+                _ => Err(SchemeError::new(format!(
+                    "Parameter list expects symbols, found {}",
+                    atom
+                ))),
+            }
+        })
+        .collect::<Result<Vec<String>, SchemeError>>()?)
 }
 
 fn do_if_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
