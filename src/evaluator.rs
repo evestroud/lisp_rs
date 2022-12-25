@@ -48,6 +48,10 @@ pub(crate) fn evaluate(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, S
             Value::Quote(quoted) => Ok(*quoted.clone()),
             _ => Ok(Exp::Atom(atom.clone())),
         },
+        Exp::Pair(_, _) => Err(SchemeError::new(format!(
+            "Cannot eval improper list {}",
+            input
+        ))),
     }
 }
 
@@ -95,6 +99,12 @@ fn do_define_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeE
                 )));
             }
         }
+        Exp::Pair(_, _) => {
+            return Err(SchemeError::new(format!(
+                "Expected a symbol or list of symbols, found Pair {}",
+                second
+            )))
+        }
         Exp::Atom(val) => {
             validate_num_args("define value", &args, 2, 2)?;
             if let Value::Symbol(symbol) = val {
@@ -115,23 +125,20 @@ fn do_let_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErro
     validate_num_args("let", &args, 2, usize::MAX)?;
     let mut closure = create_closure(env.clone());
 
-    match &args[0] {
-        Exp::List(pairs) => {
-            for pair in pairs {
-                if let Exp::List(pair_vec) = pair {
-                    validate_num_args("let pair", pair_vec, 2, usize::MAX)?;
-                    if let Value::Symbol(name) = pair_vec.get(0).unwrap().unwrap_atom()? {
-                        let value = evaluate(pair_vec.get(1).unwrap(), &mut closure)?;
-                        closure.borrow_mut().set(&name, &value);
-                    }
+    if let Exp::List(pairs) = &args[0] {
+        for pair in pairs {
+            if let Exp::List(pair_vec) = pair {
+                validate_num_args("let pair", pair_vec, 2, usize::MAX)?;
+                if let Value::Symbol(name) = pair_vec.get(0).unwrap().unwrap_atom()? {
+                    let value = evaluate(pair_vec.get(1).unwrap(), &mut closure)?;
+                    closure.borrow_mut().set(&name, &value);
                 }
             }
         }
-        Exp::Atom(_) => {
-            return Err(SchemeError::new(
-                "Let expects a list of definitions".to_string(),
-            ))
-        }
+    } else {
+        return Err(SchemeError::new(
+            "Let expects a list of definitions".to_string(),
+        ));
     }
     eval_all(&args[1..], &mut closure)
 }
@@ -153,7 +160,8 @@ fn do_lambda_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeE
                 }
             })
             .collect::<Result<Vec<String>, SchemeError>>()?,
-        Exp::Atom(_) => todo!(),
+        Exp::Pair(_, _) => todo!(),
+        Exp::Atom(_) => todo!(), // treat as vararg?? seems to be what guile does
     };
     let body = args[1..].to_vec();
     let env = create_closure(env.clone());
