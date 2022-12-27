@@ -48,6 +48,7 @@ pub(crate) fn evaluate(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, S
             Value::Quote(quoted) => Ok(*quoted.clone()),
             _ => Ok(Exp::Atom(atom.clone())),
         },
+        Exp::ImpList(_) => todo!(),
     }
 }
 
@@ -95,7 +96,7 @@ fn do_define_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeE
                 )));
             }
         }
-
+        Exp::ImpList(_) => todo!(),
         Exp::Atom(val) => {
             validate_num_args("define value", &args, 2, 2)?;
             if let Value::Symbol(symbol) = val {
@@ -139,6 +140,7 @@ fn do_lambda_form(args: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeE
     validate_num_args("lambda", &args, 2, usize::MAX)?;
     let params = match &args[0] {
         Exp::List(param_list) => eval_param_list(param_list)?,
+        Exp::ImpList(_) => todo!(),
         Exp::Atom(_) => todo!(), // treat as vararg?? seems to be what guile does
     };
     let body = args[1..].to_vec();

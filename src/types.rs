@@ -13,6 +13,7 @@ pub(crate) mod rational;
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum Exp {
     List(Vec<Exp>),
+    ImpList(Vec<Exp>),
     Atom(Value),
 }
 
@@ -53,6 +54,14 @@ impl Display for Exp {
                     + ")"
             }
             Exp::Atom(atom) => atom.to_string(),
+            Exp::ImpList(list) => {
+                let mut list_str: Vec<String> = list
+                    .iter()
+                    .map(|item| item.to_string())
+                    .collect::<Vec<String>>();
+                list_str.insert(list_str.len() - 2, ".".to_string());
+                String::from("(") + list_str.join(" ").as_str() + ")"
+            }
         };
         write!(f, "{}", string)
     }
