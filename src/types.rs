@@ -35,6 +35,13 @@ impl Exp {
         }
     }
 
+    pub(crate) fn unwrap_imp_list(&self) -> Result<Vec<Exp>, SchemeError> {
+        match self {
+            Exp::ImpList(imp_list) => Ok(imp_list.clone()),
+            _ => Err(SchemeError::new(format!("Expected a list, found {}", self))),
+        }
+    }
+
     pub(crate) fn new_list() -> Self {
         Self::List(Vec::new())
     }
