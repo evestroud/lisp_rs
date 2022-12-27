@@ -65,7 +65,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 continue;
             }
         }
-        println!("{:#?}", expression);
+        // println!("{:#?}", expression);
 
         let result;
         match eval_all(&expression, &mut env) {
@@ -75,7 +75,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 continue;
             }
         }
-        println!("{:?}", result);
+        // println!("{:?}", result);
         println!("{}", result);
 
         rl.save_history("history.txt")?;
