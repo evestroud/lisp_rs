@@ -330,9 +330,20 @@ pub(crate) fn cons(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeEr
     let args = args.unwrap_list()?;
     validate_num_args("cons", &args, 2, 2)?;
     let first = args.get(0).unwrap();
-    let mut rest = args.get(1).unwrap().unwrap_list()?;
-    rest.insert(0, first.clone());
-    Ok(Exp::List(rest))
+    let rest = args.get(1).unwrap();
+    match rest {
+        Exp::List(list) => {
+            let mut list = list.clone();
+            list.insert(0, first.clone());
+            Ok(Exp::from(&list[..]))
+        }
+        Exp::ImpList(list) => {
+            let mut list = list.clone();
+            list.insert(0, first.clone());
+            Ok(Exp::imp_from(&list[..]))
+        }
+        Exp::Atom(atom) => Ok(Exp::imp_from(&[first.clone(), Exp::Atom(atom.clone())])),
+    }
 }
 
 pub(crate) fn car(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
