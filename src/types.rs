@@ -63,7 +63,7 @@ impl Display for Exp {
                     .iter()
                     .map(|item| item.to_string())
                     .collect::<Vec<String>>();
-                list_str.insert(list_str.len() - 2, ".".to_string());
+                list_str.insert(list_str.len() - 1, ".".to_string());
                 String::from("(") + list_str.join(" ").as_str() + ")"
             }
         };
