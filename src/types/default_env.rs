@@ -349,23 +349,44 @@ pub(crate) fn cons(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeEr
 pub(crate) fn car(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
     validate_num_args("car", &args, 1, 1)?;
-    Ok(args
-        .get(0)
-        .unwrap()
-        .unwrap_list()?
-        .get(0)
-        .ok_or(SchemeError::new("car called on empty list".to_string()))?
-        .clone())
+
+    match args.get(0).unwrap() {
+        Exp::List(list) => {
+            match list.get(0) {
+                Some(car) => Ok(car.clone()),
+                None => Err(SchemeError::new("car called on empty list".to_string())),
+            }
+            //
+        }
+        Exp::ImpList(imp_list) => {
+            match imp_list.get(0) {
+                Some(car) => Ok(car.clone()),
+                None => Err(SchemeError::new("car called on empty list".to_string())),
+            }
+            //
+        }
+        Exp::Atom(atom) => Err(SchemeError::new(format!("car called on non-pair {}", atom))),
+    }
 }
 
 pub(crate) fn cdr(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
     let args = args.unwrap_list()?;
     validate_num_args("cdr", &args, 1, 1)?;
-    let list = args.get(0).unwrap().unwrap_list()?;
-    match list.len() {
-        0 => Err(SchemeError::new("cdr called on empty list".to_string())),
-        1 => Ok(Exp::new_list()),
-        _ => Ok(Exp::List(args.get(0).unwrap().unwrap_list()?[1..].to_vec())),
+
+    match args.get(0).unwrap() {
+        Exp::List(list) => match list.len() {
+            0 => Err(SchemeError::new("cdr called on empty list".to_string())),
+            1 => Ok(Exp::new_list()),
+            _ => Ok(Exp::List(args.get(0).unwrap().unwrap_list()?[1..].to_vec())),
+        },
+        Exp::ImpList(imp_list) => match imp_list.len() {
+            0 | 1 => Err(SchemeError::new("cdr called on empty list".to_string())),
+            2 => Ok(imp_list.get(1).unwrap().clone()),
+            _ => Ok(Exp::ImpList(
+                args.get(0).unwrap().unwrap_imp_list()?[1..].to_vec(),
+            )),
+        },
+        Exp::Atom(atom) => Err(SchemeError::new(format!("car called on non-pair {}", atom))),
     }
 }
 
