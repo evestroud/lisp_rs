@@ -179,4 +179,113 @@ mod integration_tests {
         let result = evaluate_input("(cdr '())").unwrap_err();
         assert_eq!(result.to_string(), "cdr called on empty list".to_string());
     }
+
+    #[test]
+    fn test_improper_list_construction() {
+        let result = evaluate_input("'(1 . 1)").unwrap();
+        assert_eq!(
+            result,
+            Exp::ImpList(vec![
+                Exp::Atom(Value::Number(Rational {
+                    numerator: 1.0,
+                    denominator: 1.0
+                })),
+                Exp::Atom(Value::Number(Rational {
+                    numerator: 1.0,
+                    denominator: 1.0
+                }))
+            ])
+        );
+
+        let result = evaluate_input("'(1 2 . 3)").unwrap();
+        assert_eq!(
+            result,
+            Exp::ImpList(vec![
+                Exp::Atom(Value::Number(Rational {
+                    numerator: 1.0,
+                    denominator: 1.0
+                })),
+                Exp::Atom(Value::Number(Rational {
+                    numerator: 2.0,
+                    denominator: 1.0
+                })),
+                Exp::Atom(Value::Number(Rational {
+                    numerator: 3.0,
+                    denominator: 1.0
+                })),
+            ])
+        );
+
+        let result = evaluate_input("(cons 1 1)").unwrap();
+        assert_eq!(
+            result,
+            Exp::ImpList(vec![
+                Exp::Atom(Value::Number(Rational {
+                    numerator: 1.0,
+                    denominator: 1.0
+                })),
+                Exp::Atom(Value::Number(Rational {
+                    numerator: 1.0,
+                    denominator: 1.0
+                }))
+            ])
+        );
+
+        let result = evaluate_input("(cons '(1 . 2) 3)").unwrap();
+        assert_eq!(
+            result,
+            Exp::ImpList(vec![
+                Exp::ImpList(vec![
+                    Exp::Atom(Value::Number(Rational {
+                        numerator: 1.0,
+                        denominator: 1.0
+                    })),
+                    Exp::Atom(Value::Number(Rational {
+                        numerator: 2.0,
+                        denominator: 1.0
+                    }))
+                ]),
+                Exp::Atom(Value::Number(Rational {
+                    numerator: 3.0,
+                    denominator: 1.0
+                })),
+            ])
+        );
+    }
+
+    #[test]
+    fn test_improper_list_access() {
+        let result = evaluate_input("(car '(1 . 2))").unwrap();
+        assert_eq!(
+            result,
+            Exp::Atom(Value::Number(Rational {
+                numerator: 1.0,
+                denominator: 1.0
+            }))
+        );
+
+        let result = evaluate_input("(car '(1 2 . 3))").unwrap();
+        assert_eq!(
+            result,
+            Exp::Atom(Value::Number(Rational {
+                numerator: 1.0,
+                denominator: 1.0
+            }))
+        );
+
+        let result = evaluate_input("(cdr '(1 2 . 3))").unwrap();
+        assert_eq!(
+            result,
+            Exp::ImpList(vec![
+                Exp::Atom(Value::Number(Rational {
+                    numerator: 2.0,
+                    denominator: 1.0,
+                })),
+                Exp::Atom(Value::Number(Rational {
+                    numerator: 3.0,
+                    denominator: 1.0,
+                }))
+            ])
+        );
+    }
 }
