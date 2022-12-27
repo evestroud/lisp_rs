@@ -8,6 +8,7 @@ use crate::{
 pub(crate) enum Token {
     StartExp,
     EndExp,
+    Dot,
     Quote,
     Literal(Value),
 }
@@ -24,6 +25,7 @@ pub(crate) fn tokenize(input: &str, buffer: &mut Buffer) -> Result<(), SchemeErr
         .map(|token| match token {
             "(" | "[" => Ok(Token::StartExp),
             ")" | "]" => Ok(Token::EndExp),
+            "." => Ok(Token::Dot),
             "'" => Ok(Token::Quote),
             "\"" => todo!(),
             _ => tokenize_symbol(token),
