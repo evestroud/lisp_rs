@@ -38,6 +38,10 @@ impl Exp {
     pub(crate) fn new_list() -> Self {
         Self::List(Vec::new())
     }
+
+    pub(crate) fn imp_from(list: &[Exp]) -> Self {
+        Self::ImpList(list.to_vec())
+    }
 }
 
 impl Display for Exp {
