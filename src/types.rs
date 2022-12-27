@@ -13,7 +13,6 @@ pub(crate) mod rational;
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum Exp {
     List(Vec<Exp>),
-    Pair(Box<Exp>, Box<Exp>),
     Atom(Value),
 }
 
@@ -35,13 +34,6 @@ impl Exp {
         }
     }
 
-    pub(crate) fn unwrap_pair(&self) -> Result<(Exp, Exp), SchemeError> {
-        match self {
-            Exp::Pair(first, rest) => Ok((*first.clone(), *rest.clone())),
-            _ => Err(SchemeError::new(format!("Expected a pair, found {}", self))),
-        }
-    }
-
     pub(crate) fn new_list() -> Self {
         Self::List(Vec::new())
     }
@@ -60,7 +52,6 @@ impl Display for Exp {
                         .as_str()
                     + ")"
             }
-            Exp::Pair(first, rest) => format!("({} . {})", first.to_string(), rest.to_string()),
             Exp::Atom(atom) => atom.to_string(),
         };
         write!(f, "{}", string)
