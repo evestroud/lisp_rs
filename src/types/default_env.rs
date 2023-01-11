@@ -1,10 +1,10 @@
 use crate::{
+    environment::Env,
     evaluator::validate_num_args,
     types::{
         function::{Builtin, Function},
         Exp, Rational, SchemeError, Value,
     },
-    Env,
 };
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
