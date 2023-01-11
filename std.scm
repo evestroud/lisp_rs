@@ -10,7 +10,7 @@
       (cons (car ls) (filter fn (cdr ls)))
       (filter fn (cdr ls)))))
 
-(define (reduce fn ls)
-  (if (empty? (cdr ls))
-    (car ls)
-    (fn (car ls) (reduce fn (cdr ls)))))
+(define (reduce fn init ls)
+  (if (empty? ls)
+    init
+    (fn (car ls) (reduce fn init (cdr ls)))))
