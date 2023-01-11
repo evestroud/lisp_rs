@@ -10,6 +10,12 @@ use std::error::Error;
 use std::fs;
 use std::rc::Rc;
 
+pub struct Config {
+    filename: Option<String>,
+    interactive: bool,
+    verbose: bool,
+}
+
 pub(crate) fn read_eval_print(filename: Option<String>) -> Result<(), Box<dyn Error>> {
     let mut env = Rc::new(RefCell::new(Env::new()));
 
