@@ -15,12 +15,20 @@ mod parser;
 mod tokenizer;
 mod types;
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() {
+    let filename = env::args().nth(1);
+
+    if let Err(e) = read_eval_print(filename) {
+        eprintln!("{}", e);
+    }
+}
+
+fn read_eval_print(filename: Option<String>) -> Result<(), Box<dyn Error>> {
     let mut env = Rc::new(RefCell::new(Env::new()));
 
     read_from_file(String::from("std.scm"), &mut env)?;
 
-    if let Some(f) = env::args().nth(1) {
+    if let Some(f) = filename {
         read_from_file(f, &mut env)?;
     }
 
