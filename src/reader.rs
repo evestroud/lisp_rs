@@ -16,6 +16,16 @@ pub struct Config {
     verbose: bool,
 }
 
+impl Config {
+    pub fn new(filename: Option<String>, interactive: bool, verbose: bool) -> Self {
+        Config {
+            filename,
+            interactive,
+            verbose,
+        }
+    }
+}
+
 pub(crate) fn read_eval_print(filename: Option<String>) -> Result<(), Box<dyn Error>> {
     let mut env = Rc::new(RefCell::new(Env::new()));
 
