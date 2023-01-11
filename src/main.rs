@@ -1,8 +1,6 @@
 use pico_args;
-use reader::Config;
+use reader::{read_eval_print, Config};
 use std::process;
-
-use crate::reader::read_eval_print;
 
 mod buffer;
 mod environment;
@@ -14,18 +12,17 @@ mod tokenizer;
 mod types;
 
 fn main() {
-    let mut args = pico_args::Arguments::from_env();
-
-    let filename = match args.opt_free_from_str() {
-        Ok(f) => f,
-        Err(e) => {
-            eprintln!("{}", e);
-            process::exit(1)
+    match config_from_args(pico_args::Arguments::from_env()) {
+        Ok(config) => {
+            if let Err(error) = read_eval_print(config) {
+                eprintln!("{}", error);
+                process::exit(1);
+            }
         }
-    };
-    if let Err(e) = read_eval_print(filename) {
-        eprintln!("{}", e);
-        process::exit(1);
+        Err(error) => {
+            eprintln!("{}", error);
+            process::exit(1);
+        }
     }
 }
 

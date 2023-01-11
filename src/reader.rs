@@ -26,12 +26,12 @@ impl Config {
     }
 }
 
-pub(crate) fn read_eval_print(filename: Option<String>) -> Result<(), Box<dyn Error>> {
+pub(crate) fn read_eval_print(config: Config) -> Result<(), Box<dyn Error>> {
     let mut env = Rc::new(RefCell::new(Env::new()));
 
     read_from_file(String::from("std.scm"), &mut env)?;
 
-    if let Some(f) = filename {
+    if let Some(f) = config.filename {
         read_from_file(f, &mut env)?;
     }
 
