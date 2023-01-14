@@ -19,11 +19,15 @@ impl Rational {
         }
     }
 
-    pub(crate) fn gcd(a: f32, b: f32) -> f32 {
-        if a == 0.0 {
-            return b;
+    pub(crate) fn gcd(mut a: f32, mut b: f32) -> f32 {
+        loop {
+            let c = b % a;
+            if c == 0.0 {
+                return a;
+            }
+            b = a;
+            a = c;
         }
-        Self::gcd(b % a, a)
     }
 
     pub(crate) fn add(&self, other: &Self) -> Self {
