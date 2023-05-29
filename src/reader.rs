@@ -7,11 +7,16 @@ use crate::tokenizer::tokenize;
 use std::cell::RefCell;
 use std::rc::Rc;
 
+#[cfg(target_arch = "wasm32-unknown-unknown")]
+use wasm_bindgen::prelude::*;
+
+#[cfg_attr(target_arch = "wasm32-unknown-unknown", wasm_bindgen)]
 pub struct Reader {
     buffer: Buffer,
     env: Rc<RefCell<Env>>,
 }
 
+#[cfg_attr(target_arch = "wasm32-unknown-unknown", wasm_bindgen)]
 impl Reader {
     pub fn new() -> Self {
         Reader {
