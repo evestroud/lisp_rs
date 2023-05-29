@@ -16,6 +16,11 @@ impl Buffer {
         }
     }
 
+    pub(crate) fn clear(&mut self) {
+        self.open_sexp = 0;
+        self.tokens = VecDeque::new();
+    }
+
     pub(crate) fn len(&self) -> usize {
         self.tokens.len()
     }

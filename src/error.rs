@@ -1,7 +1,7 @@
 use std::{error::Error, fmt};
 
 #[derive(Debug)]
-pub(crate) struct SchemeError {
+pub struct SchemeError {
     pub(crate) message: String,
     source: Option<&'static dyn Error>,
 }
