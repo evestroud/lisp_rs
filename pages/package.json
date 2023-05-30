@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "preact": "^10.13.1",
+    "vite-plugin-wasm": "^3.2.2",
     "xterm": "^5.1.0",
     "xterm-pty": "^0.9.4"
   },
