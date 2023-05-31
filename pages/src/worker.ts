@@ -1,4 +1,3 @@
-onmessage = (event) => {
-  console.log(`Worker recieved: ${event.data}`);
-  postMessage(event.data);
+onmessage = ({ data: { result, prompt } }) => {
+  postMessage(result.length ? result + "\n" + prompt : "" + prompt);
 };

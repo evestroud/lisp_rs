@@ -29,11 +29,10 @@ const Terminal = ({ onCommand, worker }: TerminalProps) => {
 
     worker.onmessage = (event) => {
       slave.write(`${event.data}`);
-      terminal.write("> ");
     };
 
     return () => terminal.dispose();
-  }, []);
+  }, [onCommand, worker]);
 
   return <div ref={divRef} />;
 };
