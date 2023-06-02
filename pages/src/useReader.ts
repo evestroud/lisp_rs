@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
-import init, { Reader } from "lisp_rs";
+import { useEffect, useState } from "preact/hooks";
+import * as lisp_rs from "../../pkg/lisp_rs.js";
 
 const useReader = () => {
-  const [reader, setReader] = useState<Reader>();
+  const [reader, setReader] = useState<lisp_rs.Reader>();
 
   useEffect(() => {
-    init().then(() => {
-      setReader(Reader.new());
+    lisp_rs.default().then(() => {
+      setReader(lisp_rs.Reader.new());
     });
   }, []);
 

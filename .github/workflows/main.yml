@@ -1,0 +1,24 @@
+on:
+  push:
+    branches:
+      - develop
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    concurrency: ci-${{ github.ref }} # Recommended if you intend to make multiple deployments in quick succession.
+    steps:
+      - uses: actions/checkout@v3.5.2
+
+      - run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - run: wasm-pack build --target web
+
+      - working-directory: ./pages
+        run: yarn && yarn build
+
+      - uses: JamesIves/github-pages-deploy-action@v4.4.1
+        with:
+          folder: ./pages/dist # The folder the action should deploy.

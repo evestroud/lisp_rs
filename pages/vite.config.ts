@@ -1,8 +1,10 @@
 import { defineConfig } from "vite";
 import preact from "@preact/preset-vite";
-import wasmPack from "vite-plugin-wasm-pack";
+import wasm from "vite-plugin-wasm";
+import topLevelAwait from "vite-plugin-top-level-await";
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [preact(), wasmPack("./lisp_rs")],
+  plugins: [wasm(), topLevelAwait(), preact()],
+  server: { fs: { allow: [".."] } },
+  base: "lisp_rs",
 });

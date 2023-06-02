@@ -27,6 +27,8 @@ const Terminal = ({ onCommand, worker }: TerminalProps) => {
       onCommand(command);
     });
 
+    slave.onSignal((event: string) => console.log(event));
+
     worker.onmessage = (event) => {
       slave.write(`${event.data}`);
     };
