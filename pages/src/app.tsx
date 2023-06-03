@@ -11,28 +11,36 @@ export function App() {
     []
   );
 
-  const onCommand = useCallback(
+  const onReadable = useCallback(
     (input: number[]) => {
       const message = input
         .map((charCode: number) => String.fromCharCode(charCode))
         .join("");
-      reader?.push(message);
 
       let result: string | unknown = "";
-      if (reader?.expression_complete()) {
-        try {
+      try {
+        reader?.push(message);
+
+        if (reader?.expression_complete()) {
           result = reader?.eval();
-        } catch (e) {
-          result = e;
         }
+      } catch (e) {
+        result = e;
+        reader?.clear_buffer();
       }
 
-      const prompt =
-        reader?.expression_complete() || reader?.new_expression() ? "> " : ". ";
+      const prompt = reader?.new_expression() ? "> " : ". ";
       worker.postMessage({ result, prompt });
     },
     [reader]
   );
 
-  return <Terminal onCommand={onCommand} worker={worker} />;
+  const onSignal = (_: string) => {
+    reader?.clear_buffer();
+    worker.postMessage({ result: " ", prompt: "> " });
+  };
+
+  return (
+    <Terminal onReadable={onReadable} onSignal={onSignal} worker={worker} />
+  );
 }

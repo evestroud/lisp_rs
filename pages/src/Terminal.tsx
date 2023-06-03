@@ -4,11 +4,12 @@ import { openpty } from "xterm-pty";
 import "../node_modules/xterm/css/xterm.css";
 
 interface TerminalProps {
-  onCommand: (line: number[]) => void;
+  onReadable: (line: number[]) => void;
+  onSignal: (signal: string) => void;
   worker: Worker;
 }
 
-const Terminal = ({ onCommand, worker }: TerminalProps) => {
+const Terminal = ({ onReadable, onSignal, worker }: TerminalProps) => {
   const divRef = useRef(null);
 
   useEffect(() => {
@@ -23,18 +24,18 @@ const Terminal = ({ onCommand, worker }: TerminalProps) => {
     terminal.write("> ");
 
     slave.onReadable(() => {
-      const command = slave.read();
-      onCommand(command);
+      const line = slave.read();
+      onReadable(line);
     });
 
-    slave.onSignal((event: string) => console.log(event));
+    slave.onSignal(onSignal);
 
     worker.onmessage = (event) => {
       slave.write(`${event.data}`);
     };
 
     return () => terminal.dispose();
-  }, [onCommand, worker]);
+  }, [onReadable, worker]);
 
   return <div ref={divRef} />;
 };
