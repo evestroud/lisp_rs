@@ -108,7 +108,7 @@ impl Display for Value {
                 Value::Number(n) => n.to_string(),
                 Value::Symbol(s) => s.to_string(),
                 Value::SpecialForm(sf) => sf.to_string(),
-                Value::Quote(q) => q.to_string(),
+                Value::Quote(q) => format!("'{}", q),
                 Value::Function(f) => f.to_string(),
             }
         )

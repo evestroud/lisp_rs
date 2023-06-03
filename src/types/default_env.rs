@@ -11,6 +11,23 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc};
 pub(crate) fn builtins_map() -> HashMap<String, Exp> {
     HashMap::from([
         /*
+            Displaying values
+        */
+        (
+            "display".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &display,
+                name: "display".to_string(),
+            }))),
+        ),
+        (
+            "newline".to_string(),
+            Exp::Atom(Value::Function(Function::Builtin(Builtin {
+                func: &newline,
+                name: "newline".to_string(),
+            }))),
+        ),
+        /*
 
         Basic math
 
@@ -171,6 +188,25 @@ pub(crate) fn builtins_map() -> HashMap<String, Exp> {
             }))),
         ),
     ])
+}
+
+/*
+    Displaying values
+*/
+pub(crate) fn display(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
+    validate_num_args("display", &args, 1, 1)?;
+
+    print!("{}", args[0]);
+    Ok(Exp::List(Vec::new()))
+}
+
+pub(crate) fn newline(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    let args = args.unwrap_list()?;
+    validate_num_args("display", &args, 0, 0)?;
+
+    println!();
+    Ok(Exp::List(Vec::new()))
 }
 
 /*

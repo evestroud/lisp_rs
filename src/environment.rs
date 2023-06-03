@@ -4,7 +4,7 @@ use crate::{
 };
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub(crate) struct Env {
     pub(crate) table: HashMap<String, Exp>,
     parent: Option<Rc<RefCell<Env>>>,
@@ -32,6 +32,12 @@ impl Env {
 
     pub(crate) fn set(&mut self, name: &str, val: &Exp) {
         self.table.insert(name.to_string(), val.clone());
+    }
+}
+
+impl std::fmt::Debug for Env {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}, parent: {:?}", self.table.keys(), self.parent)
     }
 }
 
