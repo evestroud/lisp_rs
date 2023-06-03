@@ -218,7 +218,7 @@ pub(crate) fn add(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
 
     for item in args.unwrap_list()? {
         if let Exp::Atom(Value::Number(num)) = item {
-            result = result.add(&num);
+            result = result.add(&num)?;
         } else {
             return Err(SchemeError::new(format!(
                 "+ expects a number, found {:?}",
@@ -246,12 +246,12 @@ pub(crate) fn sub(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
     }
 
     if args.len() == 1 {
-        return Ok(Exp::Atom(Value::Number(result.mul(&Rational::from(-1.0)))));
+        return Ok(Exp::Atom(Value::Number(result.mul(&Rational::from(-1.0))?)));
     }
 
     for item in args[1..].iter() {
         if let Exp::Atom(Value::Number(num)) = item {
-            result = result.sub(&num.clone());
+            result = result.sub(&num.clone())?;
         } else {
             return Err(SchemeError::new(format!(
                 "- expects a number, found {:?}",
@@ -268,7 +268,7 @@ pub(crate) fn mul(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
 
     for item in args.unwrap_list()? {
         if let Exp::Atom(Value::Number(num)) = item {
-            result = result.mul(&num);
+            result = result.mul(&num)?;
         } else {
             return Err(SchemeError::new(format!(
                 "* expects a number, found {:?}",
@@ -286,7 +286,7 @@ pub(crate) fn div(args: &Exp, _: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeErr
     let num = args.get(0).unwrap().unwrap_atom()?;
     let den = args.get(1).unwrap().unwrap_atom()?;
     if let (Value::Number(n), Value::Number(d)) = (num.clone(), den.clone()) {
-        Ok(Exp::Atom(Value::Number(n.div(&d))))
+        Ok(Exp::Atom(Value::Number(n.div(&d)?)))
     } else {
         Err(SchemeError::new(format!(
             "/ expects two numbers, found {} and {}",
