@@ -2,7 +2,6 @@ use wasm_bindgen::prelude::*;
 
 use crate::buffer::Buffer;
 use crate::environment::Env;
-use crate::error::SchemeError;
 use crate::evaluator::eval_all;
 use crate::parser::parse_all;
 use crate::tokenizer::tokenize;
@@ -45,5 +44,9 @@ impl Reader {
         let result = eval_all(&expression, &mut self.env).map_err(|e| e.to_string())?;
 
         Ok(format!("{}", result))
+    }
+
+    pub fn clear_buffer(&mut self) {
+        self.buffer.clear()
     }
 }

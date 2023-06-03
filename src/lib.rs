@@ -6,3 +6,6 @@ mod parser;
 pub mod reader;
 mod tokenizer;
 mod types;
+
+#[cfg(test)]
+mod test;

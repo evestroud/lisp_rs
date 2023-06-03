@@ -68,13 +68,18 @@ fn read_eval_print(config: Config) -> Result<(), Box<dyn Error>> {
                     rl.add_history_entry(line.as_str());
 
                     if let Err(error) = reader.push(line) {
-                        println!("{:?}", error);
+                        println!("Syntax error: {:?}", error);
+                        reader.clear_buffer();
                     }
                 }
 
-                Err(ReadlineError::Interrupted) => continue 'repl,
+                Err(ReadlineError::Interrupted) => {
+                    reader.clear_buffer();
+                    continue 'repl;
+                }
                 Err(ReadlineError::Eof) => break 'repl Ok(()),
                 Err(err) => {
+                    reader.clear_buffer();
                     println!("Error: {:?}", err);
                     continue 'repl;
                 }
@@ -83,7 +88,7 @@ fn read_eval_print(config: Config) -> Result<(), Box<dyn Error>> {
 
         match reader.eval() {
             Ok(result) => println!("{}", result),
-            Err(error) => println!("{:?}", error),
+            Err(error) => println!("Runtime error: {:?}", error),
         }
 
         rl.save_history("history.txt")?;
@@ -96,6 +101,3 @@ fn read_from_file(f: String, reader: &mut Reader) -> Result<(), Box<dyn Error>> 
     reader.eval()?;
     Ok(())
 }
-
-#[cfg(test)]
-mod test;
