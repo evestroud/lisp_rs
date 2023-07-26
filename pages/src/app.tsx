@@ -12,14 +12,10 @@ export function App() {
   );
 
   const onReadable = useCallback(
-    (input: number[]) => {
-      const message = input
-        .map((charCode: number) => String.fromCharCode(charCode))
-        .join("");
-
+    (input: string) => {
       let result: string | unknown = "";
       try {
-        reader?.push(message);
+        reader?.push(input);
 
         if (reader?.expression_complete()) {
           result = reader?.eval();
@@ -35,9 +31,9 @@ export function App() {
     [reader]
   );
 
-  const onSignal = (_: string) => {
+  const onSignal = () => {
     reader?.clear_buffer();
-    worker.postMessage({ result: " ", prompt: "> " });
+    worker.postMessage({ result: "", prompt: "> " });
   };
 
   return (

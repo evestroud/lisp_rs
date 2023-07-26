@@ -1,41 +1,62 @@
 import { useEffect, useRef } from "preact/hooks";
 import { Terminal as _Terminal } from "xterm";
-import { openpty } from "xterm-pty";
+import { Readline } from "xterm-readline";
 import "../node_modules/xterm/css/xterm.css";
 
 interface TerminalProps {
-  onReadable: (line: number[]) => void;
-  onSignal: (signal: string) => void;
+  onReadable: (line: string) => void;
+  onSignal: () => void;
   worker: Worker;
 }
 
 const Terminal = ({ onReadable, onSignal, worker }: TerminalProps) => {
   const divRef = useRef(null);
+  const promptRef = useRef("> ");
 
   useEffect(() => {
+    if (!divRef.current) throw new Error("div not found");
+
     const terminal = new _Terminal({
       cursorBlink: true,
     });
-    terminal.open(divRef.current!);
-    const { master, slave } = openpty();
-    terminal.loadAddon(master);
-
+    terminal.open(divRef.current);
+    const rl = new Readline();
+    terminal.loadAddon(rl);
     terminal.focus();
-    terminal.write("> ");
 
-    slave.onReadable(() => {
-      const line = slave.read();
-      onReadable(line);
-    });
+    // rl.setCheckHandler TODO
 
-    slave.onSignal(onSignal);
-
-    worker.onmessage = (event) => {
-      slave.write(`${event.data}`);
+    const readLine = () => {
+      rl.read(promptRef.current).then(processLine);
     };
 
+    const processLine = (input: string) => {
+      onReadable(input);
+    };
+
+    terminal.attachCustomKeyEventHandler((event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === "c") {
+        onSignal();
+      }
+      if (event.key === "Tab") {
+        console.log(event);
+        // TODO figure out how to indent
+        // event.shiftKey dedent?
+      }
+      return true;
+    });
+
+    worker.onmessage = ({ data: { result, prompt } }) => {
+      if (result) {
+        rl.println(result);
+      }
+      promptRef.current = prompt;
+      setTimeout(readLine);
+    };
+
+    readLine();
     return () => terminal.dispose();
-  }, [onReadable, worker]);
+  }, [onReadable, onSignal, worker]);
 
   return <div ref={divRef} />;
 };
