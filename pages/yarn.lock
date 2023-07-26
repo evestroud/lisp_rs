@@ -829,12 +829,10 @@ vite@^4.3.9:
   optionalDependencies:
     fsevents "~2.3.2"
 
-xterm-pty@^0.9.4:
-  version "0.9.4"
-  resolved "https://registry.yarnpkg.com/xterm-pty/-/xterm-pty-0.9.4.tgz#8d75876be8fcd2d9b9db92316dc71c4788afb6e8"
-  integrity sha512-bqQUdJgFjObaoQ4n9b/fRsZJ7F3PjxeoO1ib1mqxH6GPAFQVBWf+6Vr8I5XBsiMcwfmCOVQWmFXB6bW+BFyPlQ==
-  dependencies:
-    xterm "^4.16.0"
+xterm-addon-fit@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/xterm-addon-fit/-/xterm-addon-fit-0.7.0.tgz#b8ade6d96e63b47443862088f6670b49fb752c6a"
+  integrity sha512-tQgHGoHqRTgeROPnvmtEJywLKoC/V9eNs4bLLz7iyJr1aW/QFzRwfd3MGiJ6odJd9xEfxcW36/xRU47JkD5NKQ==
 
 xterm-readline@^1.1.1:
   version "1.1.1"
@@ -842,11 +840,6 @@ xterm-readline@^1.1.1:
   integrity sha512-f87S2/jKwRZoZTxE2vkPgBCipDl6k6tTkMTb9pmwC4R6XkfR491fWBuToZd/nZasp6seD2u0jdABinUDWsK6dw==
   dependencies:
     string-width "^4.0.0"
-
-xterm@^4.16.0:
-  version "4.19.0"
-  resolved "https://registry.yarnpkg.com/xterm/-/xterm-4.19.0.tgz#c0f9d09cd61de1d658f43ca75f992197add9ef6d"
-  integrity sha512-c3Cp4eOVsYY5Q839dR5IejghRPpxciGmLWWaP9g+ppfMeBChMeLa1DCA+pmX/jyDZ+zxFOmlJL/82qVdayVoGQ==
 
 xterm@^5.1.0:
   version "5.1.0"

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "preact/hooks";
 import { Terminal as _Terminal } from "xterm";
 import { Readline } from "xterm-readline";
+import { FitAddon } from "xterm-addon-fit";
 import "../node_modules/xterm/css/xterm.css";
 
 interface TerminalProps {
@@ -22,6 +23,9 @@ const Terminal = ({ onReadable, onSignal, worker }: TerminalProps) => {
     terminal.open(divRef.current);
     const rl = new Readline();
     terminal.loadAddon(rl);
+    const fitAddon = new FitAddon();
+    terminal.loadAddon(fitAddon);
+    fitAddon.fit();
     terminal.focus();
 
     // rl.setCheckHandler TODO
