@@ -3,6 +3,7 @@ import { Terminal as _Terminal } from "xterm";
 import { Readline } from "xterm-readline";
 import { FitAddon } from "xterm-addon-fit";
 import "../node_modules/xterm/css/xterm.css";
+import "./Terminal.css";
 
 interface TerminalProps {
   onReadable: (line: string) => void;
@@ -62,7 +63,7 @@ const Terminal = ({ onReadable, onSignal, worker }: TerminalProps) => {
     return () => terminal.dispose();
   }, [onReadable, onSignal, worker]);
 
-  return <div ref={divRef} />;
+  return <div id="terminal" ref={divRef} />;
 };
 
 export default Terminal;
