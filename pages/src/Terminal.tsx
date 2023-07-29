@@ -29,6 +29,8 @@ const Terminal = ({ onReadable, onSignal, worker }: TerminalProps) => {
     fitAddon.fit();
     terminal.focus();
 
+    window.addEventListener("resize", () => fitAddon.fit());
+
     // rl.setCheckHandler TODO
 
     const readLine = () => {
