@@ -46,10 +46,20 @@ pub(crate) fn evaluate(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, S
         Exp::Atom(atom) => match atom {
             Value::Symbol(symbol) => Ok(env.borrow().get(symbol)?),
             Value::Quote(quoted) => Ok(*quoted.clone()),
+            Value::Quasiquote(quasiquoted) => eval_quasiquote(&quasiquoted, env),
+            Value::Unquote(unquoted) => Err(SchemeError::new(
+                "Unquote only allowed inside quasiquote".to_string(),
+            )),
             _ => Ok(Exp::Atom(atom.clone())),
         },
         Exp::ImpList(_) => todo!(),
     }
+}
+
+fn eval_quasiquote(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
+    // TODO traverse Exp tree
+    // if node is Unquote, eval and replace
+    // return input with replaced values
 }
 
 pub(crate) fn eval_args(input: &Exp, env: &mut Rc<RefCell<Env>>) -> Result<Exp, SchemeError> {
@@ -66,9 +76,10 @@ pub(crate) fn apply(
     env: &mut Rc<RefCell<Env>>,
 ) -> Result<Exp, SchemeError> {
     if let Value::Function(mut function) = operator.unwrap_atom()? {
-        let args = eval_args(args, env)?;
+        let args = eval_args(args, env)?; // TODO why not map here?
         function.call(&args, env)
     } else {
+        // TODO expand macro here - match? is "else if let" a thing?
         Err(SchemeError::new(format!(
             "Expected a function, found {}",
             operator

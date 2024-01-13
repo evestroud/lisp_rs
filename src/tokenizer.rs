@@ -9,6 +9,8 @@ pub(crate) enum Token {
     StartExp,
     EndExp,
     Dot,
+    Quasiquote,
+    Unquote,
     Quote,
     Literal(Value),
 }
@@ -20,6 +22,8 @@ pub(crate) fn tokenize(input: &str, buffer: &mut Buffer) -> Result<(), SchemeErr
         .replace("[", " ( ")
         .replace("]", " ) ")
         .replace("'", " ' ")
+        .replace("`", " ` ")
+        .replace(",", " , ")
         .replace("\"", " \" ")
         .split_ascii_whitespace()
         .map(|token| match token {
@@ -27,6 +31,8 @@ pub(crate) fn tokenize(input: &str, buffer: &mut Buffer) -> Result<(), SchemeErr
             ")" | "]" => Ok(Token::EndExp),
             "." => Ok(Token::Dot),
             "'" => Ok(Token::Quote),
+            "`" => Ok(Token::Quasiquote),
+            "," => Ok(Token::Unquote),
             "\"" => todo!(),
             _ => tokenize_symbol(token),
         })

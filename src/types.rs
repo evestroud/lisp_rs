@@ -4,6 +4,7 @@ use std::fmt::{self, Display};
 
 pub(crate) mod default_env;
 pub(crate) mod function;
+pub(crate) mod lisp_macro;
 pub(crate) mod rational;
 
 /*
@@ -95,6 +96,8 @@ pub(crate) enum Value {
     Symbol(String),
     SpecialForm(SpecialForm),
     Quote(Box<Exp>),
+    Quasiquote(Box<Exp>),
+    Unquote(Box<Exp>),
     Function(Function),
 }
 
@@ -110,6 +113,8 @@ impl Display for Value {
                 Value::SpecialForm(sf) => sf.to_string(),
                 Value::Quote(q) => format!("'{}", q),
                 Value::Function(f) => f.to_string(),
+                Value::Quasiquote(qq) => format!("`{}", qq),
+                Value::Unquote(uq) => format!(",{}", uq),
             }
         )
     }

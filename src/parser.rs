@@ -51,5 +51,7 @@ pub(crate) fn parse(buffer: &mut Buffer) -> Result<Exp, SchemeError> {
         Token::Dot => Err(SchemeError::new("Unbound pair".to_string())),
         Token::Quote => Ok(Exp::Atom(Value::Quote(Box::from(parse(buffer)?)))),
         Token::Literal(value) => Ok(Exp::Atom(value.clone())),
+        Token::Quasiquote => Ok(Exp::Atom(Value::Quasiquote(Box::from(parse(buffer)?)))),
+        Token::Unquote => Ok(Exp::Atom(Value::Unquote(Box::from(parse(buffer)?)))),
     }
 }
