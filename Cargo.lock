@@ -143,10 +143,15 @@ checksum = "bb68f22743a3fb35785f1e7f844ca5a3de2dde5bd0c0ef5b372065814699b121"
 name = "lisp_rs"
 version = "0.1.0"
 dependencies = [
+ "lisp_rs_core",
  "pico-args",
  "rustyline",
  "wasm-bindgen",
 ]
+
+[[package]]
+name = "lisp_rs_core"
+version = "0.1.0"
 
 [[package]]
 name = "log"
