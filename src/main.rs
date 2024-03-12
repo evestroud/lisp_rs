@@ -1,103 +1,117 @@
-use lisp_rs::reader::Reader;
-use pico_args;
-use rustyline::error::ReadlineError;
+// use lisp_rs::reader::Reader;
+// use pico_args;
+// use rustyline::error::ReadlineError;
 use rustyline::Editor;
-use std::error::Error;
-use std::fs;
-use std::process;
+// use std::error::Error;
+// use std::fs;
+// use std::process;
 
 fn main() {
-    match config_from_args(pico_args::Arguments::from_env()) {
-        Ok(config) => {
-            if let Err(error) = read_eval_print(config) {
-                eprintln!("{}", error);
-                process::exit(1);
+    let mut rl = Editor::<()>::new().unwrap();
+    loop {
+        let input = rl.readline("> ");
+        match input {
+            Ok(line) => println!("{}", line),
+            Err(e) => {
+                println!("{}", e);
+                break;
             }
         }
-        Err(error) => {
-            eprintln!("{}", error);
-            process::exit(1);
-        }
     }
 }
 
-struct Config {
-    filename: Option<String>,
-    interactive: bool,
-    verbose: bool,
-}
+// fn main() {
+//     match config_from_args(pico_args::Arguments::from_env()) {
+//         Ok(config) => {
+//             if let Err(error) = read_eval_print(config) {
+//                 eprintln!("{}", error);
+//                 process::exit(1);
+//             }
+//         }
+//         Err(error) => {
+//             eprintln!("{}", error);
+//             process::exit(1);
+//         }
+//     }
+// }
 
-impl Config {
-    fn new(filename: Option<String>, interactive: bool, verbose: bool) -> Self {
-        Config {
-            filename,
-            interactive,
-            verbose,
-        }
-    }
-}
+// struct Config {
+//     filename: Option<String>,
+//     interactive: bool,
+//     verbose: bool,
+// }
 
-fn config_from_args(mut args: pico_args::Arguments) -> Result<Config, pico_args::Error> {
-    let filename = args.opt_free_from_str()?;
-    let interactive = filename.is_none() || args.contains("-i");
-    let verbose = args.contains("-v");
+// impl Config {
+//     fn new(filename: Option<String>, interactive: bool, verbose: bool) -> Self {
+//         Config {
+//             filename,
+//             interactive,
+//             verbose,
+//         }
+//     }
+// }
 
-    Ok(Config::new(filename, verbose, interactive))
-}
+// fn config_from_args(mut args: pico_args::Arguments) -> Result<Config, pico_args::Error> {
+//     let filename = args.opt_free_from_str()?;
+//     let interactive = filename.is_none() || args.contains("-i");
+//     let verbose = args.contains("-v");
 
-fn read_eval_print(config: Config) -> Result<(), Box<dyn Error>> {
-    let mut reader = Reader::new();
+//     Ok(Config::new(filename, verbose, interactive))
+// }
 
-    read_from_file(String::from("std.scm"), &mut reader)?;
-    if let Some(f) = config.filename {
-        read_from_file(f, &mut reader)?;
-    }
+// fn read_eval_print(config: Config) -> Result<(), Box<dyn Error>> {
+//     let mut reader = Reader::new();
 
-    let mut rl = Editor::<()>::new()?;
-    'repl: loop {
-        while !reader.expression_complete() {
-            let readline = match reader.new_expression() {
-                true => rl.readline("> "),
-                false => rl.readline(". "),
-            };
-            match readline {
-                Ok(line) => {
-                    if line == "" {
-                        continue;
-                    }
-                    rl.add_history_entry(line.as_str());
+//     read_from_file(String::from("std.scm"), &mut reader)?;
+//     if let Some(f) = config.filename {
+//         read_from_file(f, &mut reader)?;
+//     }
 
-                    if let Err(error) = reader.push(line) {
-                        println!("Syntax error: {:?}", error);
-                        reader.clear_buffer();
-                    }
-                }
+//     let mut rl = Editor::<()>::new()?;
+//     'repl: loop {
+//         while !reader.expression_complete() {
+//             let readline = match reader.new_expression() {
+//                 true => rl.readline("> "),
+//                 false => rl.readline(". "),
+//             };
+//             match readline {
+//                 Ok(line) => {
+//                     if line == "" {
+//                         continue;
+//                     }
+//                     rl.add_history_entry(line.as_str());
 
-                Err(ReadlineError::Interrupted) => {
-                    reader.clear_buffer();
-                    continue 'repl;
-                }
-                Err(ReadlineError::Eof) => break 'repl Ok(()),
-                Err(err) => {
-                    reader.clear_buffer();
-                    println!("Error: {:?}", err);
-                    continue 'repl;
-                }
-            }
-        }
+//                     if let Err(error) = reader.push(line) {
+//                         println!("Syntax error: {:?}", error);
+//                         reader.clear_buffer();
+//                     }
+//                 }
 
-        match reader.eval() {
-            Ok(result) => println!("{}", result),
-            Err(error) => println!("Runtime error: {:?}", error),
-        }
+//                 Err(ReadlineError::Interrupted) => {
+//                     reader.clear_buffer();
+//                     continue 'repl;
+//                 }
+//                 Err(ReadlineError::Eof) => break 'repl Ok(()),
+//                 Err(err) => {
+//                     reader.clear_buffer();
+//                     println!("Error: {:?}", err);
+//                     continue 'repl;
+//                 }
+//             }
+//         }
 
-        rl.save_history("history.txt")?;
-    }
-}
+//         match reader.eval() {
+//             Ok(result) => println!("{}", result),
+//             Err(error) => println!("Runtime error: {:?}", error),
+//         }
 
-fn read_from_file(f: String, reader: &mut Reader) -> Result<(), Box<dyn Error>> {
-    let contents = fs::read_to_string(f)?;
-    reader.push(contents)?;
-    reader.eval()?;
-    Ok(())
-}
+//         rl.save_history("history.txt")?;
+//     }
+// }
+
+// fn read_from_file(f: String, reader: &mut Reader) -> Result<(), Box<dyn Error>> {
+//     let contents = fs::read_to_string(f)?;
+//     reader.push(contents)?;
+//     reader.eval()?;
+//     Ok(())
+// }
