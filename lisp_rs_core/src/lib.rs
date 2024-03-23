@@ -12,10 +12,11 @@ pub mod types {
     #[derive(PartialEq, Eq, Clone, Debug)]
     pub enum Value {
         Nil,
-        Cell(Box<Cell>),
-        Number(i32),
+        List(Box<Cell>),
+        Number(i32), // TODO Numeric tower
         Boolean(bool),
         Symbol(String),
+        // TODO String(String)
     }
 
     #[cfg(test)]
