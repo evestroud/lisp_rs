@@ -1,12 +1,19 @@
 pub mod buffer;
 pub mod error;
 pub mod lexer;
+pub mod parser;
 
 pub mod types {
     #[derive(PartialEq, Eq, Clone, Debug)]
     pub struct Cell {
         car: Value,
         cdr: Value,
+    }
+
+    impl Cell {
+        fn new(car: Value, cdr: Value) -> Self {
+            Cell { car, cdr }
+        }
     }
 
     #[derive(PartialEq, Eq, Clone, Debug)]
@@ -16,6 +23,7 @@ pub mod types {
         Number(i32), // TODO Numeric tower
         Boolean(bool),
         Symbol(String),
+        Quote(Box<Value>),
         // TODO String(String)
     }
 
