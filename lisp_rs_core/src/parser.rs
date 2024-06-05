@@ -1,3 +1,5 @@
+use std::mem;
+
 use crate::{
     buffer::Buffer,
     error::SchemeError,
@@ -12,15 +14,20 @@ pub(crate) fn parse(buffer: &mut Buffer) -> Result<Value, SchemeError> {
     let t = &buffer.pop_front().unwrap();
     match t {
         Token::StartExp => {
-            Ok(Value::List(parse(buffer)?))
-            // let mut exp = Vec::new();
-            // while ![Token::EndExp, Token::Dot].contains(
-            //     buffer
-            //         .front()
-            //         .ok_or(SchemeError::new("Unexpected EOF while parsing".to_string()))?,
-            // ) {
-            //     exp.push(parse(buffer)?);
-            // }
+            let list = Cell::default();
+            let mut tail = list;
+            while ![Token::EndExp, Token::Dot].contains(
+                buffer
+                    .front()
+                    .ok_or(SchemeError::new("Unexpected EOF while parsing".to_string()))?,
+            ) {
+                // exp.push(parse(buffer)?);
+                tail.car = parse(buffer)?;
+                let mut new_tail = Cell::default();
+                tail.cdr = Value::List(Box::new(mem::take(&mut new_tail)));
+                tail = new_tail;
+            }
+            Ok(Value::List(Box::new(list)))
 
             // let last = buffer.pop_front().unwrap();
             // match last {
@@ -42,8 +49,8 @@ pub(crate) fn parse(buffer: &mut Buffer) -> Result<Value, SchemeError> {
         }
         Token::EndExp => Err(SchemeError::new("Unmatched ')'".to_string())),
         Token::Dot => Err(SchemeError::new("Unbound pair".to_string())),
-        Token::Quote => Ok(Exp::Atom(Value::Quote(Box::from(parse(buffer)?)))),
-        Token::Literal(value) => Ok(Exp::Atom(value.clone())),
+        Token::Quote => Ok(Value::Quote(Box::from(parse(buffer)?))),
+        Token::Literal(value) => Ok(value.clone()),
     }
 }
 

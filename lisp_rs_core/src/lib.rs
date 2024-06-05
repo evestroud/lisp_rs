@@ -6,13 +6,16 @@ pub mod parser;
 pub mod types {
     #[derive(PartialEq, Eq, Clone, Debug)]
     pub struct Cell {
-        car: Value,
-        cdr: Value,
+        pub car: Value,
+        pub cdr: Value,
     }
 
-    impl Cell {
-        fn new(car: Value, cdr: Value) -> Self {
-            Cell { car, cdr }
+    impl Default for Cell {
+        fn default() -> Self {
+            Cell {
+                car: Value::Nil,
+                cdr: Value::Nil,
+            }
         }
     }
 
