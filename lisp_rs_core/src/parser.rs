@@ -1,65 +1,50 @@
 use std::mem;
 
-use crate::{
-    buffer::Buffer,
-    error::SchemeError,
-    lexer::Token,
-    types::{Cell, Value},
-};
+use crate::{buffer::Buffer, error::SchemeError, lexer::Token, types::Cell};
 
-pub(crate) fn parse(buffer: &mut Buffer) -> Result<Value, SchemeError> {
+pub fn parse(buffer: &mut Buffer) -> Result<Cell, SchemeError> {
+    // TODO this check could be a part of Buffer.pop_front and return an Err
     if buffer.len() == 0 {
         return Err(SchemeError::new("Unexpected EOF while parsing".to_string()));
     }
-    let t = &buffer.pop_front().unwrap();
+    let t = buffer.pop_front().unwrap();
     match t {
-        Token::StartExp => {
-            let list = Cell::default();
-            let mut tail = list;
-            while ![Token::EndExp, Token::Dot].contains(
-                buffer
-                    .front()
-                    .ok_or(SchemeError::new("Unexpected EOF while parsing".to_string()))?,
-            ) {
-                // exp.push(parse(buffer)?);
-                tail.car = parse(buffer)?;
-                let mut new_tail = Cell::default();
-                tail.cdr = Value::List(Box::new(mem::take(&mut new_tail)));
-                tail = new_tail;
-            }
-            Ok(Value::List(Box::new(list)))
-
-            // let last = buffer.pop_front().unwrap();
-            // match last {
-            //     Token::EndExp => Ok(Exp::from(&exp[..])),
-            //     Token::Dot => {
-            //         let cdr = parse(buffer)?;
-            //         exp.push(cdr);
-            //         if buffer
-            //             .pop_front()
-            //             .ok_or(SchemeError::new("Unexpected EOF while parsing".to_string()))?
-            //             != Token::EndExp
-            //         {
-            //             return Err(SchemeError::new("'.' missing ')'".to_string()));
-            //         }
-            //         Ok(Exp::imp_from(&exp))
-            //     }
-            //     _ => panic!("Fatal error while parsing: List terminator was: {:?}", last),
-            // }
-        }
-        Token::EndExp => Err(SchemeError::new("Unmatched ')'".to_string())),
-        Token::Dot => Err(SchemeError::new("Unbound pair".to_string())),
-        Token::Quote => Ok(Value::Quote(Box::from(parse(buffer)?))),
-        Token::Literal(value) => Ok(value.clone()),
+        Token::StartExp => parse_list(buffer),
+        Token::EndExp => Err(SchemeError::new("Unexpected ')'".to_string())),
+        Token::Dot => Err(SchemeError::new("Unexpected '.'".to_string())),
+        Token::Quote => todo!(),
+        Token::Literal(mut value) => Ok(mem::take(&mut value)),
     }
 }
 
-pub(crate) fn parse_token(token: Token) -> Value {
-    match token {
-        Token::StartExp => todo!(),
-        Token::EndExp => todo!(),
-        Token::Dot => todo!(),
+fn parse_list(buffer: &mut Buffer) -> Result<Cell, SchemeError> {
+    if buffer.len() == 0 {
+        return Err(SchemeError::new("Unexpected EOF while parsing".to_string()));
+    }
+    let t = buffer.pop_front().unwrap();
+    match t {
+        Token::StartExp => parse_list(buffer),
+        Token::EndExp => Ok(Cell::Nil),
+        Token::Dot => parse_improper_list(buffer),
         Token::Quote => todo!(),
-        Token::Literal(_) => todo!(),
+        Token::Literal(value) => {
+            let car = value;
+            let cdr = parse_list(buffer)?;
+            Ok(Cell::Pair(car, Box::new(cdr)))
+        }
+    }
+}
+
+fn parse_improper_list(buffer: &mut Buffer) -> Result<Cell, SchemeError> {
+    if buffer.len() == 0 {
+        return Err(SchemeError::new("Unexpected EOF while parsing".to_string()));
+    }
+
+    let cdr = parse(buffer)?;
+
+    if let Token::EndExp = buffer.pop_front().unwrap() {
+        Ok(cdr)
+    } else {
+        Err(SchemeError::new("Missing close paren ')'".to_owned()))
     }
 }
