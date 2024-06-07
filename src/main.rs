@@ -1,4 +1,4 @@
-use lisp_rs_core::{self, buffer, lexer::tokenize};
+use lisp_rs_core::{self, buffer, lexer::tokenize, parser::parse};
 // use lisp_rs::reader::Reader;
 // use pico_args;
 // use rustyline::error::ReadlineError;
@@ -16,7 +16,10 @@ fn main() {
             Ok(line) => {
                 let mut buf = buffer::Buffer::default();
                 match tokenize(&line, &mut buf) {
-                    Ok(_) => println!("{}", buf),
+                    Ok(_) => {
+                        println!("{}", buf);
+                        println!("{:?}", parse(&mut buf))
+                    }
                     Err(e) => println!("{}", e),
                 }
                 continue;
