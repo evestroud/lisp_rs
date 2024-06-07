@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use crate::{buffer::Buffer, error::SchemeError, types::Value};
+use crate::{buffer::Buffer, error::SchemeError, types::Cell};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Token {
@@ -8,7 +8,7 @@ pub enum Token {
     EndExp,
     Dot,
     Quote,
-    Literal(Value),
+    Literal(Box<Cell>),
 }
 
 impl Display for Token {
@@ -60,19 +60,19 @@ fn tokenize_symbol(token: &str) -> Result<Token, SchemeError> {
             // Numbers can start with . and -, but make sure it's not the whole token
             || (['.', '-'].contains(&c) && ![".", "-"].contains(&token))
         {
-            Ok(Token::Literal(Value::Number(
+            Ok(Token::Literal(Box::new(Cell::Number(
                 token
                     .parse::<i32>()
                     .map_err(|_| SchemeError::new("Invalid number literal".to_string()))?,
-            )))
+            ))))
         } else if ["true", "#t"].contains(&token.to_ascii_lowercase().as_str()) {
-            Ok(Token::Literal(Value::Boolean(true)))
+            Ok(Token::Literal(Box::new(Cell::Boolean(true))))
         } else if ["false", "#f"].contains(&token.to_ascii_lowercase().as_str()) {
-            Ok(Token::Literal(Value::Boolean(false)))
+            Ok(Token::Literal(Box::new(Cell::Boolean(false))))
         // } else if special_forms.contains(&token.to_ascii_lowercase().as_str()) {
         //     Ok(Token::Literal(Value::SpecialForm(SpecialForm::from(token))))
         } else {
-            Ok(Token::Literal(Value::Symbol(token.to_string())))
+            Ok(Token::Literal(Box::new(Cell::Symbol(token.to_string()))))
         }
     } else {
         Err(SchemeError::new("Tried to parse empty token".to_string()))
