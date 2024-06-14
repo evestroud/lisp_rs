@@ -1,8 +1,6 @@
-use std::{cell::RefCell, rc::Rc};
+use crate::{environment::FrameRef, error::SchemeError, types::Cell};
 
-use crate::{environment::Env, error::SchemeError, types::Cell};
-
-pub fn evaluate(ast: Cell, env: &mut Rc<RefCell<Env>>) -> Result<Cell, SchemeError> {
+pub fn evaluate(ast: Cell, env: &mut FrameRef) -> Result<Cell, SchemeError> {
     println!("EVAL: {}", ast);
     match ast {
         Cell::Nil => Ok(ast),
@@ -14,7 +12,7 @@ pub fn evaluate(ast: Cell, env: &mut Rc<RefCell<Env>>) -> Result<Cell, SchemeErr
     }
 }
 
-fn apply(operator: Cell, operands: Cell, env: &mut Rc<RefCell<Env>>) -> Result<Cell, SchemeError> {
+fn apply(operator: Cell, operands: Cell, env: &mut FrameRef) -> Result<Cell, SchemeError> {
     // TODO Environments, Lambdas, Builtins
     println!("APPLY: operator: {}, operands: {}", operator, operands);
     Ok(Cell::Nil)

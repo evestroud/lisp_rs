@@ -1,5 +1,5 @@
 use lisp_rs_core::{
-    self, buffer, environment::Env, evaluator::evaluate, lexer::tokenize, parser::parse,
+    buffer, environment::new_environment, evaluator::evaluate, lexer::tokenize, parser::parse,
 };
 // use lisp_rs::reader::Reader;
 // use pico_args;
@@ -13,7 +13,7 @@ fn main() {
     let mut rl = Editor::<()>::new().unwrap();
 
     loop {
-        let mut env = Env::new();
+        let mut env = new_environment();
         let input = rl.readline("> ");
         match input {
             Ok(line) => {

@@ -2,21 +2,21 @@ use crate::{error::SchemeError, types::Cell};
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 #[derive(Clone, PartialEq)]
-pub struct Env {
+pub struct Frame {
     pub(crate) table: HashMap<String, Cell>,
-    parent: Option<Rc<RefCell<Env>>>,
+    parent: Option<Rc<RefCell<Frame>>>,
 }
 
-// TODO Incorporate Rc<RefCell<>> into type so don't have to declare it everywhere
+pub type FrameRef = Rc<RefCell<Frame>>;
 
-impl Env {
-    pub fn new() -> Rc<RefCell<Self>> {
-        Rc::new(RefCell::new(Self {
-            table: HashMap::new(),
-            parent: None,
-        }))
-    }
+pub fn new_environment() -> FrameRef {
+    Rc::new(RefCell::new(Frame {
+        table: HashMap::new(),
+        parent: None,
+    }))
+}
 
+impl Frame {
     pub(crate) fn get(&self, name: &str) -> Result<Cell, SchemeError> {
         if let Some(val) = self.table.get(name) {
             return Ok(val.clone());
@@ -34,14 +34,14 @@ impl Env {
     }
 }
 
-impl std::fmt::Debug for Env {
+impl std::fmt::Debug for Frame {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}, parent: {:?}", self.table.keys(), self.parent)
     }
 }
 
-pub(crate) fn create_closure<'a>(parent: Rc<RefCell<Env>>) -> Rc<RefCell<Env>> {
-    Rc::new(RefCell::new(Env {
+pub(crate) fn create_closure<'a>(parent: Rc<RefCell<Frame>>) -> Rc<RefCell<Frame>> {
+    Rc::new(RefCell::new(Frame {
         table: HashMap::new(),
         parent: Some(parent),
     }))
