@@ -1,4 +1,6 @@
-use lisp_rs_core::{self, buffer, lexer::tokenize, parser::parse};
+use lisp_rs_core::{
+    self, buffer, environment::Env, evaluator::evaluate, lexer::tokenize, parser::parse,
+};
 // use lisp_rs::reader::Reader;
 // use pico_args;
 // use rustyline::error::ReadlineError;
@@ -11,14 +13,18 @@ fn main() {
     let mut rl = Editor::<()>::new().unwrap();
 
     loop {
+        let mut env = Env::new();
         let input = rl.readline("> ");
         match input {
             Ok(line) => {
                 let mut buf = buffer::Buffer::default();
                 match tokenize(&line, &mut buf) {
                     Ok(_) => {
-                        println!("{}", buf);
-                        println!("{:?}", parse(&mut buf))
+                        println!("Buffer: {}", buf);
+                        let ast = parse(&mut buf).unwrap();
+                        println!("Parsed: {:?}", ast);
+                        let result = evaluate(ast, &mut env).unwrap();
+                        println!("Evaluated: {}", result);
                     }
                     Err(e) => println!("{}", e),
                 }
