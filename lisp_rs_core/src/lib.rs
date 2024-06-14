@@ -35,20 +35,24 @@ pub mod types {
                 f,
                 "{}",
                 match self {
-                    Cell::Nil => "".to_owned(),
+                    Cell::Nil => "".to_string(),
                     Cell::Pair(car, cdr) => {
-                        let list = vec![car.to_string()];
-                        let tail = cdr;
+                        let mut list = vec![car.to_string()];
+                        let mut tail = cdr;
                         while let Cell::Pair(ref _car, ref _cdr) = **tail {
-                            // TODO add cars to list
+                            list.push(_car.to_string());
+                            tail = _cdr;
                         }
-                        // TODO if remaining cdr is not Nil, add a dot and final value
+                        if **tail != Cell::Nil {
+                            list.push(".".to_string());
+                            list.push(tail.to_string());
+                        }
                         format!("({})", list.join(" "))
                     }
                     Cell::Number(n) => format!("{}", n),
                     Cell::Boolean(b) => format!("{}", b),
                     Cell::Symbol(s) => format!("{}", s),
-                    Cell::Quote(q) => todo!(),
+                    Cell::Quote(q) => format!("'{}", q),
                 }
             )
         }
