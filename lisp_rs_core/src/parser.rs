@@ -23,7 +23,11 @@ fn parse_list(buffer: &mut Buffer) -> Result<Cell, SchemeError> {
     }
     let t = buffer.pop_front().unwrap();
     match t {
-        Token::StartExp => parse_list(buffer),
+        Token::StartExp => {
+            let car = parse_list(buffer);
+            let cdr = parse_list(buffer);
+            Ok(Cell::Pair(Box::new(car?), Box::new(cdr?)))
+        }
         Token::EndExp => Ok(Cell::Nil),
         Token::Dot => parse_improper_list(buffer),
         Token::Quote => todo!(),
