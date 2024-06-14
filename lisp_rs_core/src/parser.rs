@@ -12,7 +12,7 @@ pub fn parse(buffer: &mut Buffer) -> Result<Cell, SchemeError> {
         Token::StartExp => parse_list(buffer),
         Token::EndExp => Err(SchemeError::new("Unexpected ')'".to_string())),
         Token::Dot => Err(SchemeError::new("Unexpected '.'".to_string())),
-        Token::Quote => todo!(),
+        Token::Quote => Ok(Cell::Quote(Box::new(parse(buffer)?))),
         Token::Literal(mut value) => Ok(mem::take(&mut value)),
     }
 }
