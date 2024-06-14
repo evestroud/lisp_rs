@@ -21,12 +21,18 @@ fn main() {
                 match tokenize(&line, &mut buf) {
                     Ok(_) => {
                         println!("Buffer: {}", buf);
-                        let ast = parse(&mut buf).unwrap();
-                        println!("Parsed: {:?}", ast);
-                        let result = evaluate(ast, &mut env).unwrap();
-                        println!("Evaluated: {}", result);
+                        match parse(&mut buf) {
+                            Ok(ast) => {
+                                println!("Parsed: {:?}", ast);
+                                match evaluate(ast, &mut env) {
+                                    Ok(result) => println!("Evaluated: {}", result),
+                                    Err(e) => println!("Eval error: {}", e),
+                                }
+                            }
+                            Err(e) => println!("Parse error: {}", e),
+                        }
                     }
-                    Err(e) => println!("{}", e),
+                    Err(e) => println!("Lex error: {}", e),
                 }
                 continue;
             }
