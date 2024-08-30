@@ -1,4 +1,4 @@
-use crate::{error::SchemeError, types::Cell};
+use crate::{builtins::generate_builtins, error::SchemeError, types::Cell};
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 #[derive(Clone, PartialEq)]
@@ -11,7 +11,7 @@ pub type FrameRef = Rc<RefCell<Frame>>;
 
 pub fn new_environment() -> FrameRef {
     Rc::new(RefCell::new(Frame {
-        table: HashMap::new(),
+        table: generate_builtins(),
         parent: None,
     }))
 }

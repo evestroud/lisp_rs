@@ -9,11 +9,15 @@ pub fn evaluate(ast: Cell, env: &mut FrameRef) -> Result<Cell, SchemeError> {
         Cell::Boolean(_) => Ok(ast),
         Cell::Symbol(s) => env.borrow().get(&s),
         Cell::Quote(q) => Ok(*q),
+        Cell::Builtin(_) => Ok(ast),
     }
 }
 
 fn apply(operator: Cell, operands: Cell, env: &mut FrameRef) -> Result<Cell, SchemeError> {
     // TODO Environments, Lambdas, Builtins
     println!("APPLY: operator: {}, operands: {}", operator, operands);
+    if let Cell::Builtin(f) = evaluate(operator, env)? {
+        return f.0(&operands, env);
+    }
     Ok(Cell::Nil)
 }
