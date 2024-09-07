@@ -5,7 +5,7 @@ use crate::{environment::FrameRef, error::SchemeError};
 use super::Cell;
 
 #[derive(Clone)]
-pub(crate) struct Builtin(pub &'static dyn Fn(&Cell, &mut FrameRef) -> Result<Cell, SchemeError>);
+pub struct Builtin(pub &'static dyn Fn(&Cell, &mut FrameRef) -> Result<Cell, SchemeError>);
 
 impl Display for Builtin {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -21,6 +21,6 @@ impl Debug for Builtin {
 
 impl PartialEq for Builtin {
     fn eq(&self, other: &Self) -> bool {
-        self == other
+        std::ptr::eq(self.0, other.0)
     }
 }

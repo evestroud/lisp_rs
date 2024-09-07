@@ -4,8 +4,9 @@ use functions::Builtin;
 
 pub(crate) mod functions;
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(Default, PartialEq, Clone, Debug)]
 pub enum Cell {
+    #[default]
     Nil,
     Pair(Box<Cell>, Box<Cell>),
     Number(i32), // TODO Numeric tower
@@ -30,12 +31,6 @@ impl Cell {
     }
 }
 
-impl Default for Cell {
-    fn default() -> Self {
-        Cell::Nil
-    }
-}
-
 impl Display for Cell {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
@@ -56,9 +51,9 @@ impl Display for Cell {
                     }
                     format!("({})", list.join(" "))
                 }
-                Cell::Number(n) => format!("{}", n),
-                Cell::Boolean(b) => format!("{}", b),
-                Cell::Symbol(s) => format!("{}", s),
+                Cell::Number(n) => n.to_string(),
+                Cell::Boolean(b) => b.to_string(),
+                Cell::Symbol(s) => s.to_string(),
                 Cell::Quote(q) => format!("'{}", q),
                 Self::Builtin(_) => "Builtin function".to_string(),
             }
@@ -130,10 +125,3 @@ impl Iterator for Iter {
         (len, Some(len))
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     #[test]
-//     fn it_works() {}
-// }
-// }
