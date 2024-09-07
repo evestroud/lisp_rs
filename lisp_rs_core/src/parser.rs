@@ -4,7 +4,7 @@ use crate::{buffer::Buffer, error::SchemeError, lexer::Token, types::Cell};
 
 pub fn parse(buffer: &mut Buffer) -> Result<Cell, SchemeError> {
     // TODO this check could be a part of Buffer.pop_front and return an Err
-    if buffer.len() == 0 {
+    if buffer.is_empty() {
         return Err(SchemeError::new("Unexpected EOF while parsing".to_string()));
     }
     let t = buffer.pop_front().unwrap();
@@ -18,7 +18,7 @@ pub fn parse(buffer: &mut Buffer) -> Result<Cell, SchemeError> {
 }
 
 fn parse_list(buffer: &mut Buffer) -> Result<Cell, SchemeError> {
-    if buffer.len() == 0 {
+    if buffer.is_empty() {
         return Err(SchemeError::new("Unexpected EOF while parsing".to_string()));
     }
     let t = buffer.pop_front().unwrap();
@@ -40,7 +40,7 @@ fn parse_list(buffer: &mut Buffer) -> Result<Cell, SchemeError> {
 }
 
 fn parse_improper_list(buffer: &mut Buffer) -> Result<Cell, SchemeError> {
-    if buffer.len() == 0 {
+    if buffer.is_empty() {
         return Err(SchemeError::new("Unexpected EOF while parsing".to_string()));
     }
 

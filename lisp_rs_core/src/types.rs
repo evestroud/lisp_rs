@@ -26,8 +26,12 @@ impl Cell {
         IntoIter { next: self }
     }
 
-    fn len(&self) -> usize {
+    pub fn len(&self) -> usize {
         self.iter().count()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 }
 
@@ -55,7 +59,7 @@ impl Display for Cell {
                 Cell::Boolean(b) => b.to_string(),
                 Cell::Symbol(s) => s.to_string(),
                 Cell::Quote(q) => format!("'{}", q),
-                Self::Builtin(_) => "Builtin function".to_string(),
+                Self::Builtin(b) => b.to_string(),
             }
         )
     }
@@ -72,7 +76,7 @@ impl<'a> Iterator for IntoIter<'a> {
         match self.next {
             Cell::Nil => None,
             Cell::Pair(car, cdr) => {
-                self.next = &cdr;
+                self.next = cdr;
                 Some(car)
             }
             _ => {
@@ -94,7 +98,7 @@ impl<'a> IntoIterator for &'a Cell {
     type IntoIter = IntoIter<'a>;
 
     fn into_iter(self) -> Self::IntoIter {
-        IntoIter { next: &self }
+        IntoIter { next: self }
     }
 }
 
