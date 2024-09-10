@@ -40,7 +40,7 @@ impl std::fmt::Debug for Frame {
     }
 }
 
-pub(crate) fn create_closure<'a>(parent: Rc<RefCell<Frame>>) -> Rc<RefCell<Frame>> {
+pub(crate) fn create_closure(parent: Rc<RefCell<Frame>>) -> Rc<RefCell<Frame>> {
     Rc::new(RefCell::new(Frame {
         table: HashMap::new(),
         parent: Some(parent),

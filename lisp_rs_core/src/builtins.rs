@@ -1,5 +1,4 @@
 use crate::{
-    environment::FrameRef,
     error::SchemeError,
     types::{functions::Builtin, Cell},
 };
@@ -15,7 +14,7 @@ pub fn generate_builtins() -> HashMap<String, Cell> {
     ])
 }
 
-pub fn add(args: &Cell, _env: &mut FrameRef) -> Result<Cell, SchemeError> {
+pub fn add(args: &Cell) -> Result<Cell, SchemeError> {
     let mut sum = 0;
     for a in args {
         if let Cell::Number(n) = a {
@@ -27,7 +26,7 @@ pub fn add(args: &Cell, _env: &mut FrameRef) -> Result<Cell, SchemeError> {
     Ok(Cell::Number(sum))
 }
 
-pub fn sub(args: &Cell, _env: &mut FrameRef) -> Result<Cell, SchemeError> {
+pub fn sub(args: &Cell) -> Result<Cell, SchemeError> {
     validate_num_args(args, "sub", Arity::AtLeast(2))?;
     let mut difference = 0;
     for a in args {
@@ -40,7 +39,7 @@ pub fn sub(args: &Cell, _env: &mut FrameRef) -> Result<Cell, SchemeError> {
     Ok(Cell::Number(difference))
 }
 
-pub fn mul(args: &Cell, _env: &mut FrameRef) -> Result<Cell, SchemeError> {
+pub fn mul(args: &Cell) -> Result<Cell, SchemeError> {
     let mut product = 1;
     for a in args {
         if let Cell::Number(n) = a {
@@ -52,7 +51,7 @@ pub fn mul(args: &Cell, _env: &mut FrameRef) -> Result<Cell, SchemeError> {
     Ok(Cell::Number(product))
 }
 
-pub fn div(args: &Cell, _env: &mut FrameRef) -> Result<Cell, SchemeError> {
+pub fn div(args: &Cell) -> Result<Cell, SchemeError> {
     validate_num_args(args, "div", Arity::AtLeast(2))?;
     let mut quotient = 1;
     for a in args {

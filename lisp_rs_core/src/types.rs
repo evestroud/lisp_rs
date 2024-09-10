@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use functions::Builtin;
+use functions::{Builtin, Lambda};
 
 pub(crate) mod functions;
 
@@ -14,7 +14,7 @@ pub enum Cell {
     Symbol(String),
     Quote(Box<Cell>),
     Builtin(Builtin),
-    // TODO String(String)
+    Lambda(Lambda), // TODO String(String)
 }
 
 impl Cell {
@@ -60,6 +60,7 @@ impl Display for Cell {
                 Cell::Symbol(s) => s.to_string(),
                 Cell::Quote(q) => format!("'{}", q),
                 Self::Builtin(b) => b.to_string(),
+                Cell::Lambda(l) => format!("{:?}", l),
             }
         )
     }

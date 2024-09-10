@@ -24,7 +24,7 @@ fn main() {
                         match parse(&mut buf) {
                             Ok(ast) => {
                                 println!("Parsed: {:?}", ast);
-                                match evaluate(ast, &mut env) {
+                                match evaluate(&ast, &mut env) {
                                     Ok(result) => println!("Evaluated: {}", result),
                                     Err(e) => println!("Eval error: {}", e),
                                 }
