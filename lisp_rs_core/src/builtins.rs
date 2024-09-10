@@ -15,57 +15,57 @@ pub fn generate_builtins() -> HashMap<String, Cell> {
 }
 
 pub fn add(args: &Cell) -> Result<Cell, SchemeError> {
-    let mut sum = 0;
-    for a in args {
-        if let Cell::Number(n) = a {
-            sum += n;
-        } else {
-            return Err(SchemeError::new(format!("Expected number, found {}", a)));
-        }
-    }
-    Ok(Cell::Number(sum))
+    args.iter()
+        .try_fold(Cell::Number(0), |result, item| match (result, item) {
+            (Cell::Number(x), Cell::Number(y)) => Ok(Cell::Number(x + y)),
+            _ => Err(SchemeError::new(format!("Expected number, found {}", item))),
+        })
 }
 
 pub fn sub(args: &Cell) -> Result<Cell, SchemeError> {
-    validate_num_args(args, "sub", Arity::AtLeast(2))?;
-    let mut difference = 0;
-    for a in args {
-        if let Cell::Number(n) = a {
-            difference -= n;
+    validate_num_args(args, "sub", Arity::AtLeast(1))?;
+    args.iter().try_fold(
+        // Simple inversion for unary application
+        if args.len() == 1 {
+            Cell::Number(0)
         } else {
-            return Err(SchemeError::new(format!("Expected number, found {}", a)));
-        }
-    }
-    Ok(Cell::Number(difference))
+            Cell::Nil
+        },
+        |result, item| match (result, item) {
+            (Cell::Nil, Cell::Number(n)) => Ok(Cell::Number(*n)),
+            (Cell::Number(x), Cell::Number(y)) => Ok(Cell::Number(x - y)),
+            _ => Err(SchemeError::new(format!("Expected number, found {}", item))),
+        },
+    )
 }
 
 pub fn mul(args: &Cell) -> Result<Cell, SchemeError> {
-    let mut product = 1;
-    for a in args {
-        if let Cell::Number(n) = a {
-            product *= n;
-        } else {
-            return Err(SchemeError::new(format!("Expected number, found {}", a)));
-        }
-    }
-    Ok(Cell::Number(product))
+    args.iter()
+        .try_fold(Cell::Number(1), |result, item| match (result, item) {
+            (Cell::Number(x), Cell::Number(y)) => Ok(Cell::Number(x * y)),
+            _ => Err(SchemeError::new(format!("Expected number, found {}", item))),
+        })
 }
 
 pub fn div(args: &Cell) -> Result<Cell, SchemeError> {
-    validate_num_args(args, "div", Arity::AtLeast(2))?;
-    let mut quotient = 1;
-    for a in args {
-        if let Cell::Number(n) = a {
-            quotient *= n;
+    validate_num_args(args, "div", Arity::AtLeast(1))?;
+    args.iter().try_fold(
+        // Simple inversion for unary application
+        if args.len() == 1 {
+            Cell::Number(1)
         } else {
-            return Err(SchemeError::new(format!("Expected number, found {}", a)));
-        }
-    }
-    Ok(Cell::Number(quotient))
+            Cell::Nil
+        },
+        |result, item| match (result, item) {
+            (Cell::Nil, Cell::Number(n)) => Ok(Cell::Number(*n)),
+            (Cell::Number(x), Cell::Number(y)) => Ok(Cell::Number(x / y)),
+            _ => Err(SchemeError::new(format!("Expected number, found {}", item))),
+        },
+    )
 }
 
 enum Arity {
-    Zero,
+    Exact(usize),
     AtLeast(usize),
     AtMost(usize),
     Range(usize, usize),
@@ -73,11 +73,12 @@ enum Arity {
 
 fn validate_num_args(args: &Cell, name: &str, arity: Arity) -> Result<(), SchemeError> {
     match arity {
-        Arity::Zero => {
-            if !args.is_empty() {
+        Arity::Exact(n) => {
+            if args.len() != n {
                 return Err(SchemeError::new(format!(
-                    "Function {} expects no arguments, found {}.",
+                    "Function {} expects at exactly {} arguments, found {}.",
                     name,
+                    n,
                     args.len()
                 )));
             }
