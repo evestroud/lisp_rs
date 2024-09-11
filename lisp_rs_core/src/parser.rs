@@ -21,20 +21,25 @@ fn parse_list(buffer: &mut Buffer) -> Result<Cell, SchemeError> {
     if buffer.is_empty() {
         return Err(SchemeError::new("Unexpected EOF while parsing".to_string()));
     }
+
     let t = buffer.pop_front().unwrap();
     match t {
         Token::StartExp => {
-            let car = parse_list(buffer);
-            let cdr = parse_list(buffer);
-            Ok(Cell::Pair(Box::new(car?), Box::new(cdr?)))
+            let car = parse_list(buffer)?;
+            let cdr = parse_list(buffer)?;
+            Ok(Cell::new_pair_from(car, cdr))
         }
         Token::EndExp => Ok(Cell::Nil),
         Token::Dot => parse_improper_list(buffer),
-        Token::Quote => todo!(),
-        Token::Literal(value) => {
-            let car = value;
+        Token::Quote => {
+            let car = Cell::Quote(Box::new(parse(buffer)?));
             let cdr = parse_list(buffer)?;
-            Ok(Cell::Pair(car, Box::new(cdr)))
+            Ok(Cell::new_pair_from(car, cdr))
+        }
+        Token::Literal(value) => {
+            let car = *value;
+            let cdr = parse_list(buffer)?;
+            Ok(Cell::new_pair_from(car, cdr))
         }
     }
 }

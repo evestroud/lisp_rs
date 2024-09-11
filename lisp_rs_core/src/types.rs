@@ -22,6 +22,10 @@ impl Cell {
         Cell::Pair(Box::new(Cell::Nil), Box::new(Cell::Nil))
     }
 
+    pub fn new_pair_from(car: Cell, cdr: Cell) -> Self {
+        Cell::Pair(Box::new(car), Box::new(cdr))
+    }
+
     pub fn iter(&self) -> IntoIter {
         IntoIter { next: self }
     }
