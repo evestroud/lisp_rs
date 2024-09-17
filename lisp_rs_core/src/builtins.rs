@@ -1,16 +1,31 @@
 use crate::{
     error::SchemeError,
-    types::{functions::Builtin, Cell},
+    types::{
+        functions::{Builtin, Function},
+        Cell,
+    },
 };
 use std::collections::HashMap;
 
 pub fn generate_builtins() -> HashMap<String, Cell> {
     HashMap::from([
         ("nil".to_string(), Cell::Nil),
-        ("+".to_string(), Cell::Builtin(Builtin(&add))),
-        ("-".to_string(), Cell::Builtin(Builtin(&sub))),
-        ("*".to_string(), Cell::Builtin(Builtin(&mul))),
-        ("/".to_string(), Cell::Builtin(Builtin(&div))),
+        (
+            "+".to_string(),
+            Cell::Function(Function::Builtin(Builtin(&add))),
+        ),
+        (
+            "-".to_string(),
+            Cell::Function(Function::Builtin(Builtin(&sub))),
+        ),
+        (
+            "*".to_string(),
+            Cell::Function(Function::Builtin(Builtin(&mul))),
+        ),
+        (
+            "/".to_string(),
+            Cell::Function(Function::Builtin(Builtin(&div))),
+        ),
     ])
 }
 

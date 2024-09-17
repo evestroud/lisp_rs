@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use functions::{Builtin, Lambda};
+use functions::Function;
 
 pub(crate) mod functions;
 
@@ -13,8 +13,7 @@ pub enum Cell {
     Boolean(bool),
     Symbol(String),
     Quote(Box<Cell>),
-    Builtin(Builtin),
-    Lambda(Lambda), // TODO String(String)
+    Function(Function), // TODO String(String)
 }
 
 impl Cell {
@@ -63,8 +62,7 @@ impl Display for Cell {
                 Cell::Boolean(b) => b.to_string(),
                 Cell::Symbol(s) => s.to_string(),
                 Cell::Quote(q) => format!("'{}", q),
-                Self::Builtin(b) => b.to_string(),
-                Cell::Lambda(l) => format!("{:?}", l),
+                Cell::Function(f) => f.to_string(),
             }
         )
     }
@@ -132,5 +130,15 @@ impl Iterator for Iter {
             None => 0,
         };
         (len, Some(len))
+    }
+}
+
+impl FromIterator<Cell> for Cell {
+    fn from_iter<T: IntoIterator<Item = Cell>>(iter: T) -> Self {
+        let mut head = Cell::Nil;
+        for item in iter {
+            head = Cell::new_pair_from(item, head)
+        }
+        head
     }
 }

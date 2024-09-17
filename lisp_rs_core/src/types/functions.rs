@@ -8,12 +8,40 @@ use crate::{
 
 use super::Cell;
 
+#[derive(Clone, Debug, PartialEq)]
+pub enum Function {
+    Builtin(Builtin),
+    Lambda(Lambda),
+}
+
+impl Function {
+    pub fn call(&mut self, args: &Cell) -> Result<Cell, SchemeError> {
+        match self {
+            Function::Builtin(b) => b.call(args),
+            Function::Lambda(l) => l.call(args),
+        }
+    }
+}
+
+impl Display for Function {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Function::Builtin(b) => b.to_string(),
+                Function::Lambda(l) => l.to_string(),
+            }
+        )
+    }
+}
+
 #[derive(Clone)]
 pub struct Builtin(pub &'static dyn Fn(&Cell) -> Result<Cell, SchemeError>);
 
 impl Builtin {
-    pub(crate) fn call(&self, args: &Cell) -> Result<Cell, SchemeError> {
-        self.0(args)
+    pub fn call(&self, args: &Cell) -> Result<Cell, SchemeError> {
+        (self.0)(args)
     }
 }
 
@@ -64,5 +92,11 @@ impl Lambda {
             self.env.borrow_mut().set(param, arg);
         }
         evaluate(&self.body, &mut self.env)
+    }
+}
+
+impl Display for Lambda {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "(lambda ({:?}))", self.parameters)
     }
 }
