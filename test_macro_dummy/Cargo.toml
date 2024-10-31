@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 lisp_rs_macro = { path = "../lisp_rs_macro"}
+lisp_rs_core = { path = "../lisp_rs_core" }

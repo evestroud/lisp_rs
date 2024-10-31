@@ -1,0 +1,11 @@
+error[E0593]: function is expected to take 1 argument, but it takes 0 arguments
+ --> tests/incorrect_signature.rs:3:1
+  |
+3 | #[load_builtins]
+  | ^^^^^^^^^^^^^^^^ expected function that takes 1 argument
+...
+6 |     fn do_nothing() {}
+  |     --------------- takes 0 arguments
+  |
+  = note: required for the cast from `&fn() {do_nothing}` to `&'static (dyn for<'a> Fn(&'a lisp_rs_core::types::Cell) -> Result<lisp_rs_core::types::Cell, SchemeError> + 'static)`
+  = note: this error originates in the attribute macro `load_builtins` (in Nightly builds, run with -Z macro-backtrace for more info)
