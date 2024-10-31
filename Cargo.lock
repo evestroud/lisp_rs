@@ -192,6 +192,7 @@ version = "0.1.0"
 name = "lisp_rs_macro"
 version = "0.1.0"
 dependencies = [
+ "lisp_rs_core",
  "proc-macro2",
  "quote",
  "syn",
@@ -413,6 +414,7 @@ dependencies = [
 name = "test_macro_dummy"
 version = "0.1.0"
 dependencies = [
+ "lisp_rs_core",
  "lisp_rs_macro",
 ]
 

@@ -16,7 +16,8 @@ path = "tests/test_runner.rs"
 trybuild = { version = "1.0.49", features = ["diff"] }
 
 [dependencies]
-syn = { version = "2.0", features = ["full"] }
+lisp_rs_core = { path = "../lisp_rs_core" }
+syn = { version = "2.0", features = ["full", "visit-mut", "extra-traits"] }
 quote = "1.0"
 proc-macro2 = "1.0"
 
