@@ -1,4 +1,4 @@
-workspace = { members = ["lisp_rs_core"] }
+workspace = { members = ["lisp_rs_core", "lisp_rs_macro", "test_macro_dummy"] }
 [package]
 name = "lisp_rs"
 version = "0.1.0"
@@ -13,4 +13,4 @@ pico-args = "0.5.0"
 
 [dependencies]
 wasm-bindgen = "0.2.86"
-lisp_rs_core = { path = "lisp_rs_core" ,version = "0.1.0"}
+lisp_rs_core = { path = "lisp_rs_core", version = "0.1.0"}
