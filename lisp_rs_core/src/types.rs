@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use functions::Function;
 
-pub(crate) mod functions;
+pub mod functions;
 
 #[derive(Default, PartialEq, Clone, Debug)]
 pub enum Cell {

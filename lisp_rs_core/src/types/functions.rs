@@ -79,7 +79,7 @@ impl Lambda {
         }
     }
 
-    pub(crate) fn call(&mut self, arguments: &Cell) -> Result<Cell, SchemeError> {
+    pub fn call(&mut self, arguments: &Cell) -> Result<Cell, SchemeError> {
         if self.parameters.len() != arguments.len() {
             return Err(SchemeError::new(format!(
                 "LAMBDA: Expected {} arguments, found {}",
