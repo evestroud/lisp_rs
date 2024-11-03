@@ -1,4 +1,11 @@
-use crate::{builtins::generate_builtins, error::SchemeError, types::Cell};
+use crate::{
+    builtins::generate_builtins,
+    error::SchemeError,
+    types::{
+        functions::{Builtin, Function},
+        Cell,
+    },
+};
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 #[derive(Clone, PartialEq)]
@@ -31,6 +38,18 @@ impl Frame {
 
     pub fn set(&mut self, name: &str, val: &Cell) {
         self.table.insert(name.to_string(), val.clone());
+    }
+
+    pub fn load_builtins(&mut self, builtins: Vec<Builtin>) {
+        builtins.into_iter().for_each(|builtin| {
+            if self.table.contains_key(builtin.name) {
+                panic!("error loading builtins: duplicate entry {}", builtin.name)
+            }
+            self.table.insert(
+                builtin.name.to_string(),
+                Cell::Function(Function::Builtin(builtin)),
+            );
+        })
     }
 }
 

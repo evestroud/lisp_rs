@@ -17,14 +17,10 @@ pub fn load_builtins(_: TokenStream, input: TokenStream) -> TokenStream {
             .iter()
             .map(|BuiltinInfo { lisp_name, fn_name }| {
                 quote! {
-                    env.borrow_mut().set(
-                        #lisp_name,
-                        &lisp_rs_core::types::Cell::Function(
-                            lisp_rs_core::types::functions::Function::Builtin(
-                                lisp_rs_core::types::functions::Builtin(&#fn_name)
-                            )
-                        )
-                    )
+                    lisp_rs_core::types::functions::Builtin {
+                        name: #lisp_name,
+                        func: &#fn_name
+                    }
                 }
             });
 
@@ -38,7 +34,10 @@ pub fn load_builtins(_: TokenStream, input: TokenStream) -> TokenStream {
         use lisp_rs_core::environment::FrameRef;
 
         pub fn load_builtins(env: &mut lisp_rs_core::environment::FrameRef) {
-            #(#builtin_load_statements);*
+            env.borrow_mut().load_builtins(vec![
+                #(#builtin_load_statements),*
+            ])
+
         }
     };
 

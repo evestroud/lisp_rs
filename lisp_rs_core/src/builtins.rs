@@ -12,19 +12,31 @@ pub fn generate_builtins() -> HashMap<String, Cell> {
         ("nil".to_string(), Cell::Nil),
         (
             "+".to_string(),
-            Cell::Function(Function::Builtin(Builtin(&add))),
+            Cell::Function(Function::Builtin(Builtin {
+                name: "+",
+                func: &add,
+            })),
         ),
         (
             "-".to_string(),
-            Cell::Function(Function::Builtin(Builtin(&sub))),
+            Cell::Function(Function::Builtin(Builtin {
+                name: "-",
+                func: &sub,
+            })),
         ),
         (
             "*".to_string(),
-            Cell::Function(Function::Builtin(Builtin(&mul))),
+            Cell::Function(Function::Builtin(Builtin {
+                name: "*",
+                func: &mul,
+            })),
         ),
         (
             "/".to_string(),
-            Cell::Function(Function::Builtin(Builtin(&div))),
+            Cell::Function(Function::Builtin(Builtin {
+                name: "/",
+                func: &div,
+            })),
         ),
     ])
 }
