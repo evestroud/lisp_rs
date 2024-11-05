@@ -1,5 +1,5 @@
 use crate::{
-    builtins::generate_builtins,
+    builtins,
     error::SchemeError,
     types::{
         functions::{Builtin, Function},
@@ -17,10 +17,12 @@ pub struct Frame {
 pub type FrameRef = Rc<RefCell<Frame>>;
 
 pub fn new_environment() -> FrameRef {
-    Rc::new(RefCell::new(Frame {
-        table: generate_builtins(),
+    let mut env = Rc::new(RefCell::new(Frame {
+        table: HashMap::new(),
         parent: None,
-    }))
+    }));
+    builtins::builtins::load_builtins(&mut env);
+    env
 }
 
 impl Frame {

@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{parse_macro_input, visit_mut::VisitMut, Error, Ident, ItemMod};
+use syn::{parse_macro_input, spanned::Spanned, visit_mut::VisitMut, Error, Ident, ItemMod};
 
 #[proc_macro_attribute]
 pub fn load_builtins(_: TokenStream, input: TokenStream) -> TokenStream {
@@ -17,7 +17,7 @@ pub fn load_builtins(_: TokenStream, input: TokenStream) -> TokenStream {
             .iter()
             .map(|BuiltinInfo { lisp_name, fn_name }| {
                 quote! {
-                    lisp_rs_core::types::functions::Builtin {
+                    crate::types::functions::Builtin {
                         name: #lisp_name,
                         func: &#fn_name
                     }
@@ -25,15 +25,20 @@ pub fn load_builtins(_: TokenStream, input: TokenStream) -> TokenStream {
             });
 
     if builtin_load_statements.len() == 0 {
-        return Error::new_spanned(input, "no #[builtin] annotated functions found")
-            .into_compile_error()
-            .into();
+        let e = Error::new(input.span(), "no #[builtin] annotated functions found")
+            .into_compile_error();
+        let input = input.into_token_stream();
+        return quote! {
+            #e
+            #input
+        }
+        .into();
     }
 
     let load_builtins_fn = quote! {
-        use lisp_rs_core::environment::FrameRef;
+        use crate::environment::FrameRef;
 
-        pub fn load_builtins(env: &mut lisp_rs_core::environment::FrameRef) {
+        pub fn load_builtins(env: &mut crate::environment::FrameRef) {
             env.borrow_mut().load_builtins(vec![
                 #(#builtin_load_statements),*
             ])

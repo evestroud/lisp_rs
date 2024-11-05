@@ -187,12 +187,14 @@ dependencies = [
 [[package]]
 name = "lisp_rs_core"
 version = "0.1.0"
+dependencies = [
+ "lisp_rs_macro",
+]
 
 [[package]]
 name = "lisp_rs_macro"
 version = "0.1.0"
 dependencies = [
- "lisp_rs_core",
  "proc-macro2",
  "quote",
  "syn",
