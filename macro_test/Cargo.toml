@@ -1,0 +1,16 @@
+[package]
+name = "macro_test"
+version = "0.1.0"
+edition = "2021"
+autotests = false
+
+[[test]]
+name = "tests"
+path = "tests/test_runner.rs"
+
+[dev-dependencies]
+trybuild = { version = "1.0.49", features = ["diff"] }
+
+[dependencies]
+lisp_rs_macro = { path = "../lisp_rs_macro"}
+lisp_rs_core = { path = "../lisp_rs_core" }

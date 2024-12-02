@@ -1,23 +1,32 @@
-use crate::{builtins::generate_builtins, error::SchemeError, types::Cell};
+use crate::{
+    builtins,
+    error::SchemeError,
+    types::{
+        functions::{Builtin, Function},
+        Cell,
+    },
+};
 use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 #[derive(Clone, PartialEq)]
 pub struct Frame {
-    pub(crate) table: HashMap<String, Cell>,
+    pub table: HashMap<String, Cell>,
     parent: Option<Rc<RefCell<Frame>>>,
 }
 
 pub type FrameRef = Rc<RefCell<Frame>>;
 
 pub fn new_environment() -> FrameRef {
-    Rc::new(RefCell::new(Frame {
-        table: generate_builtins(),
+    let mut env = Rc::new(RefCell::new(Frame {
+        table: HashMap::new(),
         parent: None,
-    }))
+    }));
+    builtins::builtins::load_builtins(&mut env);
+    env
 }
 
 impl Frame {
-    pub(crate) fn get(&self, name: &str) -> Result<Cell, SchemeError> {
+    pub fn get(&self, name: &str) -> Result<Cell, SchemeError> {
         if let Some(val) = self.table.get(name) {
             return Ok(val.clone());
         }
@@ -29,8 +38,20 @@ impl Frame {
         Err(SchemeError::new(format!("Name {} not found", name)))
     }
 
-    pub(crate) fn set(&mut self, name: &str, val: &Cell) {
+    pub fn set(&mut self, name: &str, val: &Cell) {
         self.table.insert(name.to_string(), val.clone());
+    }
+
+    pub fn load_builtins(&mut self, builtins: Vec<Builtin>) {
+        builtins.into_iter().for_each(|builtin| {
+            if self.table.contains_key(builtin.name) {
+                panic!("error loading builtins: duplicate entry {}", builtin.name)
+            }
+            self.table.insert(
+                builtin.name.to_string(),
+                Cell::Function(Function::Builtin(builtin)),
+            );
+        })
     }
 }
 
@@ -40,7 +61,7 @@ impl std::fmt::Debug for Frame {
     }
 }
 
-pub(crate) fn create_closure(parent: Rc<RefCell<Frame>>) -> Rc<RefCell<Frame>> {
+pub fn create_closure(parent: Rc<RefCell<Frame>>) -> Rc<RefCell<Frame>> {
     Rc::new(RefCell::new(Frame {
         table: HashMap::new(),
         parent: Some(parent),

@@ -37,11 +37,14 @@ impl Display for Function {
 }
 
 #[derive(Clone)]
-pub struct Builtin(pub &'static dyn Fn(&Cell) -> Result<Cell, SchemeError>);
+pub struct Builtin {
+    pub name: &'static str,
+    pub func: &'static dyn Fn(&Cell) -> Result<Cell, SchemeError>,
+}
 
 impl Builtin {
     pub fn call(&self, args: &Cell) -> Result<Cell, SchemeError> {
-        (self.0)(args)
+        (self.func)(args)
     }
 }
 
@@ -59,7 +62,7 @@ impl Debug for Builtin {
 
 impl PartialEq for Builtin {
     fn eq(&self, other: &Self) -> bool {
-        std::ptr::eq(self.0, other.0)
+        std::ptr::eq(self.func, other.func)
     }
 }
 
@@ -79,7 +82,7 @@ impl Lambda {
         }
     }
 
-    pub(crate) fn call(&mut self, arguments: &Cell) -> Result<Cell, SchemeError> {
+    pub fn call(&mut self, arguments: &Cell) -> Result<Cell, SchemeError> {
         if self.parameters.len() != arguments.len() {
             return Err(SchemeError::new(format!(
                 "LAMBDA: Expected {} arguments, found {}",

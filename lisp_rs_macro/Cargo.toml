@@ -1,0 +1,14 @@
+[package]
+name = "lisp_rs_macro"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "2.0", features = ["full", "visit-mut", "extra-traits"] }
+quote = "1.0"
+proc-macro2 = "1.0"
+

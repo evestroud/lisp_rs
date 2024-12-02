@@ -1,84 +1,65 @@
-use crate::{
-    error::SchemeError,
-    types::{
-        functions::{Builtin, Function},
-        Cell,
-    },
-};
-use std::collections::HashMap;
+use crate::{error::SchemeError, types::Cell};
+use lisp_rs_macro::load_builtins;
 
-pub fn generate_builtins() -> HashMap<String, Cell> {
-    HashMap::from([
-        ("nil".to_string(), Cell::Nil),
-        (
-            "+".to_string(),
-            Cell::Function(Function::Builtin(Builtin(&add))),
-        ),
-        (
-            "-".to_string(),
-            Cell::Function(Function::Builtin(Builtin(&sub))),
-        ),
-        (
-            "*".to_string(),
-            Cell::Function(Function::Builtin(Builtin(&mul))),
-        ),
-        (
-            "/".to_string(),
-            Cell::Function(Function::Builtin(Builtin(&div))),
-        ),
-    ])
-}
+// TODO what next?
+#[load_builtins]
+pub mod builtins {
 
-pub fn add(args: &Cell) -> Result<Cell, SchemeError> {
-    args.iter()
-        .try_fold(Cell::Number(0), |result, item| match (result, item) {
-            (Cell::Number(x), Cell::Number(y)) => Ok(Cell::Number(x + y)),
-            _ => Err(SchemeError::new(format!("Expected number, found {}", item))),
-        })
-}
+    use crate::error::SchemeError;
+    use crate::types::Cell;
 
-pub fn sub(args: &Cell) -> Result<Cell, SchemeError> {
-    validate_num_args(args, "sub", Arity::AtLeast(1))?;
-    args.iter().try_fold(
-        // Simple inversion for unary application
-        if args.len() == 1 {
-            Cell::Number(0)
-        } else {
-            Cell::Nil
-        },
-        |result, item| match (result, item) {
-            (Cell::Nil, Cell::Number(n)) => Ok(Cell::Number(*n)),
-            (Cell::Number(x), Cell::Number(y)) => Ok(Cell::Number(x - y)),
-            _ => Err(SchemeError::new(format!("Expected number, found {}", item))),
-        },
-    )
-}
+    #[builtin]
+    pub fn add(args: &Cell) -> Result<Cell, SchemeError> {
+        args.iter()
+            .try_fold(Cell::Number(0), |result, item| match (result, item) {
+                (Cell::Number(x), Cell::Number(y)) => Ok(Cell::Number(x + y)),
+                _ => Err(SchemeError::new(format!("Expected number, found {}", item))),
+            })
+    }
 
-pub fn mul(args: &Cell) -> Result<Cell, SchemeError> {
-    args.iter()
-        .try_fold(Cell::Number(1), |result, item| match (result, item) {
-            (Cell::Number(x), Cell::Number(y)) => Ok(Cell::Number(x * y)),
-            _ => Err(SchemeError::new(format!("Expected number, found {}", item))),
-        })
-}
+    #[builtin]
+    pub fn sub(args: &Cell) -> Result<Cell, SchemeError> {
+        args.iter().try_fold(
+            // Simple inversion for unary application
+            if args.len() == 1 {
+                Cell::Number(0)
+            } else {
+                Cell::Nil
+            },
+            |result, item| match (result, item) {
+                (Cell::Nil, Cell::Number(n)) => Ok(Cell::Number(*n)),
+                (Cell::Number(x), Cell::Number(y)) => Ok(Cell::Number(x - y)),
+                _ => Err(SchemeError::new(format!("Expected number, found {}", item))),
+            },
+        )
+    }
 
-pub fn div(args: &Cell) -> Result<Cell, SchemeError> {
-    validate_num_args(args, "div", Arity::AtLeast(1))?;
-    args.iter().try_fold(
-        // Simple inversion for unary application
-        if args.len() == 1 {
-            Cell::Number(1)
-        } else {
-            Cell::Nil
-        },
-        |result, item| match (result, item) {
-            (Cell::Nil, Cell::Number(n)) => Ok(Cell::Number(*n)),
-            (Cell::Number(x), Cell::Number(y)) => Ok(Cell::Number(x / y)),
-            _ => Err(SchemeError::new(format!("Expected number, found {}", item))),
-        },
-    )
-}
+    #[builtin]
+    pub fn mul(args: &Cell) -> Result<Cell, SchemeError> {
+        args.iter()
+            .try_fold(Cell::Number(1), |result, item| match (result, item) {
+                (Cell::Number(x), Cell::Number(y)) => Ok(Cell::Number(x * y)),
+                _ => Err(SchemeError::new(format!("Expected number, found {}", item))),
+            })
+    }
 
+    #[builtin]
+    pub fn div(args: &Cell) -> Result<Cell, SchemeError> {
+        args.iter().try_fold(
+            // Simple inversion for unary application
+            if args.len() == 1 {
+                Cell::Number(1)
+            } else {
+                Cell::Nil
+            },
+            |result, item| match (result, item) {
+                (Cell::Nil, Cell::Number(n)) => Ok(Cell::Number(*n)),
+                (Cell::Number(x), Cell::Number(y)) => Ok(Cell::Number(x / y)),
+                _ => Err(SchemeError::new(format!("Expected number, found {}", item))),
+            },
+        )
+    }
+} // TODO
 enum Arity {
     Exact(usize),
     AtLeast(usize),

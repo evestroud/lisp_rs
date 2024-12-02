@@ -2,7 +2,7 @@ use std::{error::Error, fmt};
 
 #[derive(Debug)]
 pub struct SchemeError {
-    pub(crate) message: String,
+    pub message: String,
     source: Option<&'static dyn Error>,
 }
 
@@ -19,14 +19,14 @@ impl Error for SchemeError {
 }
 
 impl SchemeError {
-    pub(crate) fn new(message: String) -> Self {
+    pub fn new(message: String) -> Self {
         Self {
             message,
             source: None,
         }
     }
 
-    pub(crate) fn from(message: String, e: &'static dyn Error) -> Self {
+    pub fn from(message: String, e: &'static dyn Error) -> Self {
         Self {
             message,
             source: Some(e),
