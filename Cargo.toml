@@ -1,4 +1,4 @@
-workspace = { members = ["lisp_rs_core", "lisp_rs_macro", "test_macro_dummy"] }
+workspace = { members = ["lisp_rs_core", "lisp_rs_macro", "macro_test"] }
 [package]
 name = "lisp_rs"
 version = "0.1.0"

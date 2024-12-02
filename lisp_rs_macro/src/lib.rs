@@ -1,9 +1,25 @@
 use proc_macro::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{parse_macro_input, spanned::Spanned, visit_mut::VisitMut, Error, Ident, ItemMod};
+use syn::{
+    parse_macro_input, parse_quote, spanned::Spanned, visit_mut::VisitMut, Error, Ident, ItemMod,
+    Path,
+};
 
 #[proc_macro_attribute]
-pub fn load_builtins(_: TokenStream, input: TokenStream) -> TokenStream {
+pub fn load_builtins(args: TokenStream, input: TokenStream) -> TokenStream {
+    // When using this macro in lisp_rs_core, the path for types used needs to
+    // start with `crate`, but in tests that import types from lisp_rs_core the
+    // path needs to be `lisp_rs_core`. This annotation argument changes the
+    // path for tests.
+    let mut crate_source: Path = parse_quote! {crate};
+    let args_parser = syn::meta::parser(|meta| {
+        if meta.path.is_ident("test") {
+            crate_source = parse_quote! { lisp_rs_core};
+        };
+        Ok(())
+    });
+    parse_macro_input!(args with args_parser);
+
     let mut input = parse_macro_input!(input as ItemMod);
 
     let mut visitor = ModVisitor {
@@ -17,7 +33,7 @@ pub fn load_builtins(_: TokenStream, input: TokenStream) -> TokenStream {
             .iter()
             .map(|BuiltinInfo { lisp_name, fn_name }| {
                 quote! {
-                    crate::types::functions::Builtin {
+                    #crate_source::types::functions::Builtin {
                         name: #lisp_name,
                         func: &#fn_name
                     }
@@ -36,9 +52,9 @@ pub fn load_builtins(_: TokenStream, input: TokenStream) -> TokenStream {
     }
 
     let load_builtins_fn = quote! {
-        use crate::environment::FrameRef;
+        use #crate_source::environment::FrameRef;
 
-        pub fn load_builtins(env: &mut crate::environment::FrameRef) {
+        pub fn load_builtins(env: &mut #crate_source::environment::FrameRef) {
             env.borrow_mut().load_builtins(vec![
                 #(#builtin_load_statements),*
             ])

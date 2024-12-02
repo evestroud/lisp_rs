@@ -1,8 +1,0 @@
-[package]
-name = "test_macro_dummy"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-lisp_rs_macro = { path = "../lisp_rs_macro"}
-lisp_rs_core = { path = "../lisp_rs_core" }

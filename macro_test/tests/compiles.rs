@@ -1,15 +1,13 @@
 use lisp_rs_macro::load_builtins;
 
-#[load_builtins]
-mod goof {
+#[load_builtins(test)]
+mod example_type {
     use lisp_rs_core::{error::SchemeError, types::Cell};
 
     #[builtin]
-    pub fn goof(args: &Cell) -> Result<Cell, SchemeError> {
+    pub fn example_fn(args: &Cell) -> Result<Cell, SchemeError> {
         Ok(Cell::Nil)
     }
 }
 
-fn main() {
-    println!("Hello, world!");
-}
+fn main() {}

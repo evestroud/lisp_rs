@@ -1,7 +1,5 @@
 error: no #[builtin] annotated functions found
  --> tests/no_functions.rs:4:1
   |
-4 | / mod test_compiles {
-5 | |     fn do_nothing() {}
-6 | | }
-  | |_^
+4 | mod test_compiles {
+  | ^^^

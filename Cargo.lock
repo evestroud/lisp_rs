@@ -198,7 +198,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
- "trybuild",
 ]
 
 [[package]]
@@ -206,6 +205,15 @@ name = "log"
 version = "0.4.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a7a70ba024b9dc04c27ea2f0c0548feb474ec5c54bba33a7f72f873a39d07b24"
+
+[[package]]
+name = "macro_test"
+version = "0.1.0"
+dependencies = [
+ "lisp_rs_core",
+ "lisp_rs_macro",
+ "trybuild",
+]
 
 [[package]]
 name = "memchr"
@@ -410,14 +418,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "06794f8f6c5c898b3275aebefa6b8a1cb24cd2c6c79397ab15774837a0bc5755"
 dependencies = [
  "winapi-util",
-]
-
-[[package]]
-name = "test_macro_dummy"
-version = "0.1.0"
-dependencies = [
- "lisp_rs_core",
- "lisp_rs_macro",
 ]
 
 [[package]]
