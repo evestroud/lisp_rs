@@ -70,7 +70,7 @@ impl PartialEq for Builtin {
 pub struct Lambda {
     parameters: Vec<String>,
     body: Box<Cell>,
-    env: FrameRef,
+    parent_frame: FrameRef,
 }
 
 impl Lambda {
@@ -78,7 +78,7 @@ impl Lambda {
         Self {
             parameters,
             body,
-            env: create_closure(env),
+            parent_frame: env,
         }
     }
 
@@ -91,10 +91,11 @@ impl Lambda {
             )));
         }
 
+        let mut frame = create_closure(self.parent_frame.clone());
         for (param, arg) in std::iter::zip(self.parameters.iter(), arguments.iter()) {
-            self.env.borrow_mut().set(param, arg);
+            frame.borrow_mut().set(param, arg);
         }
-        evaluate(&self.body, &mut self.env)
+        evaluate(&self.body, &mut frame)
     }
 }
 

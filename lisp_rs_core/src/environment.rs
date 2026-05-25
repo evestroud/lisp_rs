@@ -11,7 +11,7 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc};
 #[derive(Clone, PartialEq)]
 pub struct Frame {
     pub table: HashMap<String, Cell>,
-    parent: Option<Rc<RefCell<Frame>>>,
+    parent: Option<FrameRef>,
 }
 
 pub type FrameRef = Rc<RefCell<Frame>>;
